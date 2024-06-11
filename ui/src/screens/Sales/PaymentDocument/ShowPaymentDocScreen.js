@@ -20,6 +20,7 @@ import { saveAs } from "file-saver";
 import PaymentReceipt from "../components/Receipts/PaymentReceipt";
 import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
+import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
 
 const TABLE_HEAD = [
   "No",
@@ -452,6 +453,7 @@ export default function ShowPaymentDocScreen() {
           <div className="flex items-center">
             <Typography variant="h6">Search Payment</Typography>
             <HomeButton />
+            <ReportsDropDown />
           </div>
           <hr />
         </div>

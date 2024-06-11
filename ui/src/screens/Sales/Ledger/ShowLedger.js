@@ -149,8 +149,6 @@ export default function ShowLedgerPage() {
     setPaymentRows(rowData);
   }, [filterValues.Client]);
 
-  console.log(paymentRows);
-
   //   useEffect(() => {
   //     let rowData = mergedArray.filter((object) => {
   //         // Check if the client matches the filter value

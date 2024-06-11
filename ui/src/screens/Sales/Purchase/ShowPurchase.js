@@ -21,6 +21,7 @@ import Invoice from "../components/Invoice";
 import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
+import { useNavigate } from "react-router-dom";
 
 const TABLE_HEAD = [
   "No",
@@ -51,6 +52,8 @@ export default function ShowInvoicePage() {
   useEffect(() => {
     document.title = "Purchase Order Report";
   });
+  const navigate = useNavigate();
+
   const [formValues, setFormValues] = useState({
     Document_No: "",
     Transaction_type: "",
@@ -381,7 +384,6 @@ export default function ShowInvoicePage() {
       console.error("Export error:", error);
     }
   };
-  console.log(invoices);
   const renderInvoicePreview = () => {
     if (isInvoicePreviewOpen) {
       return (
@@ -557,7 +559,9 @@ export default function ShowInvoicePage() {
           <Button onClick={exportInvoicesToExcel}>Export</Button>
         </div>
         <div className="mx-3">
-          <Button onClick={api_new_purchase}>New Purchase Order</Button>
+          <Button onClick={() => navigate("/sales/purchase/new")}>
+            New Purchase Order
+          </Button>
         </div>
       </div>
 

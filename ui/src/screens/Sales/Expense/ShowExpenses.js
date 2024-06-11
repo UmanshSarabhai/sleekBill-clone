@@ -16,7 +16,10 @@ import {
 import React, { useEffect, useState } from "react";
 import { ProductInvoiceTable } from "../components/ProductInvoiceTable";
 import SelectComp from "../components/SelectComp";
-import { get_all_expenses } from "../../../utils/SelectOptions";
+import {
+  get_all_expenses,
+  get_all_employee,
+} from "../../../utils/SelectOptions";
 import { saveAs } from "file-saver";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 
@@ -68,7 +71,6 @@ const generateDropDownList = (data) => {
 };
 
 const allExpenses = await get_all_expenses();
-console.log(allExpenses);
 const handleDeleteExpense = async (obj) => {
   const res = await window.api.invoke("delete-expense-by-id", obj.id);
   alert(res.message);
@@ -112,15 +114,15 @@ const EXPENSES_ROWS = allExpenses.flat().map((x) => {
   };
 });
 
+const allEmployees = await get_all_employee();
+console.log(allEmployees.flat());
+
 export default function ShowExpenses() {
   useEffect(() => {
     document.title = "Show Expense";
   });
 
-  const person_option = Array.from(
-    new Set(allExpenses.flat().map((x) => x.Person_name)),
-  );
-
+  const person_option = allEmployees.flat().map((x) => x.Employee_name);
   const [filterValues, setFilterValues] = useState({
     Person: "",
     Type: "",
@@ -330,13 +332,15 @@ export default function ShowExpenses() {
           <DialogBody>
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <Input
+                <SelectComp
                   variant="outlined"
-                  label="Person Name"
-                  placeholder="Person Name"
-                  onChange={(e) =>
-                    handleFieldChange("Person_name", e.target.value)
-                  }
+                  label="Employee Name"
+                  placeholder="Employee Name"
+                  options={generateDropDownList(person_option)}
+                  isInput={false}
+                  handle={(values) => {
+                    handleFieldChange("Person_name", values);
+                  }}
                 />
               </div>
               {renderCustomExpense ? (

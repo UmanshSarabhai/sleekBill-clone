@@ -1,15 +1,9 @@
-import SelectComp from "../../screens/Sales/components/SelectComp";
-import { Routes, Route, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import Select from "react-select";
 
 export default function ModuleDropDown() {
   const location = useLocation();
-
-  function convertDropdownData(data) {
-    return data.map((item) => ({
-      text: item,
-      value: item,
-    }));
-  }
+  const navigate = useNavigate();
 
   function extractMiddleTitleCase(path) {
     const parts = path.split("/");
@@ -19,31 +13,67 @@ export default function ModuleDropDown() {
     });
     return "New " + titleCaseMiddlePart;
   }
-  console.log(extractMiddleTitleCase(location.pathname));
 
-  const navigateOptions = [
-    "New Invoice",
-    "New Quotation",
-    "New Debit",
-    "New Credit",
-  ];
-  return (
-    <div style={{ maxWidth: 300, marginLeft: 20 }}>
-      <SelectComp
-        options={convertDropdownData(navigateOptions)}
-        handle={(value) => {
-          if (value === "New Invoice") {
-            window.location.href = "/sales/invoice/new";
-          } else if (value === "New Quotation") {
-            window.location.href = "/sales/quotation/new";
-          } else if (value === "New Debit") {
-            window.location.href = "/sales/debit/new";
-          } else {
-            window.location.href = "/sales/credit/new";
-          }
+  function ListItemsOptions({ title, to }) {
+    const renderTitle = () => {
+      if (!title) return null;
+      return (
+        <h1
+          className="font-bold text-black"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            fontSize: "small",
+          }}
+        >
+          {title}
+        </h1>
+      );
+    };
+
+    const handleClick = () => {
+      navigate(to);
+    };
+
+    return (
+      <div
+        onClick={handleClick}
+        style={{
+          justifyContent: "center",
+          border: "none",
+          cursor: "pointer", // Add cursor style for better UX
         }}
-        label="Module"
-        isinput={false}
+      >
+        <div>{renderTitle()}</div>
+      </div>
+    );
+  }
+
+  const options = [
+    {
+      value: "1",
+      label: <ListItemsOptions title="New Invoice" to="/sales/invoice/new" />,
+    },
+    {
+      value: "2",
+      label: (
+        <ListItemsOptions title="New Quotation" to="/sales/quotation/new" />
+      ),
+    },
+    {
+      value: "3",
+      label: <ListItemsOptions title="New Debit" to="/sales/debit/new" />,
+    },
+    {
+      value: "4",
+      label: <ListItemsOptions title="New Credit" to="/sales/credit/new" />,
+    },
+  ];
+
+  return (
+    <div style={{ width: 200, marginLeft: 20 }}>
+      <Select
+        options={options}
         placeholder={extractMiddleTitleCase(location.pathname)}
       />
     </div>

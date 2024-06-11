@@ -1,5 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
-const path = require('path');
+const path = require("path");
 const { DBManager } = require("./utils/DBManager");
 const { CompanyModel } = require("./models/Company");
 const { Client } = require("./models/Client");
@@ -9,6 +9,7 @@ const { Category } = require("./models/Category");
 const { SubCategory } = require("./models/SubCategory");
 const { Tax } = require("./models/Tax");
 const electronReload = require("electron-reload");
+const chokidar = require("chokidar");
 const ExcelJS = require("exceljs");
 const XLSX = require("xlsx");
 const { Invoice } = require("./models/Invoice");
@@ -24,11 +25,12 @@ const { Employee } = require("./models/Employee");
 const { EmployeePaymentDetails } = require("./models/EmployeePaymentDetails");
 const { Todo } = require("./models/Todo");
 const { EmployeeLeaveDetails } = require("./models/EmployeeLeaveDetails");
+const { ProductQuantities } = require("./models/ProductQuantities");
 const {
   EmployeeAttendanceDetails,
 } = require("./models/EmployeeAttendanceDetails");
 
-electronReload(__dirname);
+// electronReload(__dirname);
 
 let mainWindow;
 function createWindow() {
@@ -36,20 +38,34 @@ function createWindow() {
     width: 800,
     height: 600,
     webPreferences: {
-      nodeIntegration: true, // is default value after Electron v5
+      nodeIntegration: false, // is default value after Electron v5
       contextIsolation: true, // protect against prototype pollution
       enableRemoteModule: false,
       preload: path.join(__dirname, "preload.js"),
     },
     title: "Billing System",
   });
+
   const startURL = "http://localhost:3000";
+
+  const isDevelopment = false;
+
   if (!DBManager.isInitialized) {
     DBManager.initialize().then((v) => {
-      mainWindow.loadURL(startURL);
-      // mainWindow.loadFile(path.join(__dirname, 'ui/build/index.html'));
+      // mainWindow.loadURL(startURL);
+      mainWindow.loadFile(path.join(__dirname, "ui/build/index.html"));
     });
   }
+  if (isDevelopment) {
+    electronReload(__dirname);
+  } else {
+    const watcher = chokidar.watch("db/test.sqlite");
+    watcher.on("change", () => {
+      console.log("DB file changed. Reloading...");
+      mainWindow.reload();
+    });
+  }
+
   mainWindow.on("closed", () => (mainWindow = null));
 }
 
@@ -237,7 +253,6 @@ async function addNewProduct(args) {
     const product = {
       p_type: args.p_type,
       uom: args.uom,
-      sku: args.sku,
       product_name: args.product_name,
       purchase_price: args.purchase_price,
       keyword: args.keyword,
@@ -248,13 +263,8 @@ async function addNewProduct(args) {
       opening_rate: args.opening_rate,
       storage_location: args.storage_location,
       sub_location: args.sub_location,
-      hns: args.hns,
-      sac: args.sac,
       unit_price: args.unit_price,
-      currency: args.currency,
       tax: args.tax,
-      quantity: args.quantity,
-      cess: args.cess,
       description: args.description,
       created_at: new Date(),
     };
@@ -268,6 +278,7 @@ async function addNewProduct(args) {
       return { success: true, message: "Product added successfully" };
     }
   } catch (error) {
+    console.log(error);
     return { success: false, message: "Error while adding new product" };
   }
 }
@@ -548,7 +559,6 @@ ipcMain.handle("delete-client-by-id", async (ev, args) => {
 ipcMain.handle("get-all-client", async (ev, args) => {
   const clientrepo = DBManager.getRepository(Client);
   const data = await clientrepo.find();
-  // console.log(data);
   return {
     data,
   };
@@ -557,7 +567,6 @@ ipcMain.handle("get-all-client", async (ev, args) => {
 ipcMain.handle("get-todo-data", async (ev, args) => {
   const clientrepo = DBManager.getRepository(Todo);
   const data = await clientrepo.find();
-  // console.log(data);
   return {
     data,
   };
@@ -566,7 +575,6 @@ ipcMain.handle("get-todo-data", async (ev, args) => {
 ipcMain.handle("get-all-vendors", async (ev, args) => {
   const clientrepo = DBManager.getRepository(VendorDetails);
   const data = await clientrepo.find();
-  // console.log(data);
   return {
     data,
   };
@@ -598,6 +606,14 @@ ipcMain.handle("get-all-employee-payments", async (ev, args) => {
 
 ipcMain.handle("get-all-employee-leaves", async (ev, args) => {
   const clientrepo = DBManager.getRepository(EmployeeLeaveDetails);
+  const data = await clientrepo.find();
+  return {
+    data,
+  };
+});
+
+ipcMain.handle("get-attendance", async (ev, args) => {
+  const clientrepo = DBManager.getRepository(EmployeeAttendanceDetails);
   const data = await clientrepo.find();
   return {
     data,
@@ -909,7 +925,6 @@ ipcMain.handle("export-products-to-excel", async (ev, args) => {
       { header: "Product Name", key: "product_name", width: 20 },
       { header: "Unit Price", key: "unit_price", width: 20 },
       { header: "Uom", key: "uom", width: 20 },
-      { header: "Quantity", key: "quantity", width: 20 },
       { header: "Description", key: "description", width: 20 },
       { header: "Type", key: "p_type", width: 20 },
       { header: "Purchase Rate", key: "purchase_price", width: 20 },
@@ -926,7 +941,6 @@ ipcMain.handle("export-products-to-excel", async (ev, args) => {
         product_name: product.product_name,
         unit_price: product.unit_price,
         uom: product.uom,
-        quantity: product.quantity,
         description: product.description,
         p_type: product.p_type,
         purchase_price: product.purchase_price,
@@ -1464,6 +1478,7 @@ ipcMain.handle("add-new-debit-note", async (ev, args) => {
 ipcMain.handle("add-new-vendor", async (ev, args) => {
   try {
     const response = await addNewVendor(args);
+    console.log(response);
     return response;
   } catch (error) {
     console.log(error);
@@ -1747,7 +1762,6 @@ async function addNewPurchaseOrder(invoiceData) {
       Discount_on_all: invoiceData.Discount_on_all,
       Total_BeforeTax: invoiceData.Total_BeforeTax,
       Total_Tax: invoiceData.Total_Tax,
-      Location: invoiceData.Location,
     };
     // Save the new invoice entity to the database
     const result = await productRepo
@@ -1824,11 +1838,9 @@ async function addNewVendor(vendorData) {
       .values(vendorDetailsObj)
       .execute();
 
-    if (result.raw.insertId) {
-      // Return the ID of the inserted entity along with success message
+    if (result) {
       return {
         success: true,
-        id: result.raw.insertId,
         message: "New vendor details added successfully!",
       };
     } else {
@@ -2610,8 +2622,6 @@ async function updateCreditNote(invoiceData) {
 }
 
 ipcMain.handle("export-invoices-to-excel", async (ev, args) => {
-  console.log("ev", ev);
-  console.log("args", args);
   try {
     // Call the API to get all products with pagination and search query
     const invoices = args;
@@ -2669,6 +2679,62 @@ ipcMain.handle("export-invoices-to-excel", async (ev, args) => {
     console.error("Error exporting products:", error);
     return null;
   }
+});
+
+ipcMain.handle("export-credit-to-excel", async (ev, args) => {
+  console.log("ev", ev);
+  console.log("args", args);
+  // try {
+  //   // Call the API to get all products with pagination and search query
+  //   const invoices = args;
+
+  //   // Create a new workbook
+  //   const workbook = new ExcelJS.Workbook();
+
+  //   // Add a worksheet
+  //   const worksheet = workbook.addWorksheet("Quotation");
+
+  //   // Define the columns
+  //   worksheet.columns = [
+  //     { header: "Client Name", key: "client_name", width: 20 },
+  //     { header: "Quotation No", key: "invoice_no", width: 20 },
+  //     { header: "Issue Date", key: "issue_date", width: 20 },
+  //     { header: "Valid Until", key: "due_date", width: 20 },
+  //     { header: "Amount", key: "amount", width: 20 },
+  //     { header: "Tax", key: "tax", width: 20 },
+  //     { header: "Shipping Cost", key: "shipping_cost", width: 20 },
+  //     { header: "Total", key: "total", width: 20 },
+  //     { header: "Type", key: "type", width: 20 },
+  //     { header: "Private Notes", key: "private_notes", width: 20 },
+  //   ];
+
+  //   for (const invoice of invoices) {
+  //     worksheet.addRow({
+  //       client_name: invoice["Client Name"],
+  //       invoice_no: invoice["Invoice No"],
+  //       issue_date: invoice["Issue Date"],
+  //       due_date: invoice["Valid Until"],
+  //       amount: invoice["Amount"],
+  //       tax: invoice["Tax"],
+  //       shipping_cost: invoice["Shipping Cost"],
+  //       total: invoice["Total"],
+  //       type: invoice["Type"],
+  //       private_notes: invoice["Private Notes"],
+  //     });
+  //   }
+  //   // Generate a buffer from the workbook
+  //   const buffer = await workbook.xlsx.writeBuffer();
+
+  //   if (buffer) {
+  //     return { success: true, buffer: buffer };
+  //   } else {
+  //     console.error("Error: Buffer is null.");
+  //     return { success: false, error: "Buffer is null." };
+  //   }
+  // } catch (error) {
+  //   console.error("Error exporting products:", error);
+  //   return null;
+  // }
 });
 
 ipcMain.handle("export-quotation-to-excel", async (ev, args) => {
@@ -2796,38 +2862,45 @@ async function addCompanyDetails(companyDetailsData) {
   try {
     const companyDetailsRepo = DBManager.getRepository(CompanyDetails);
 
-    // Check if company details already exist
-    // const existingDetails = await companyDetailsRepo.find();
+    // Check if company details already exist (assuming there is only one record or a unique key to identify the record)
+    let existingCompanyDetails = await companyDetailsRepo.find();
 
-    // Prepare the company details object
     const companyDetailsObj = {
-      companyName: companyDetailsData.CompanyName,
-      address: companyDetailsData.Address,
-      pincode: companyDetailsData.Pincode,
-      city: companyDetailsData.City,
-      state: companyDetailsData.State,
-      country: companyDetailsData.Country,
-      phone: companyDetailsData.Phone,
-      email: companyDetailsData.Email,
-      website: companyDetailsData.Website,
+      companyName: companyDetailsData.companyName,
+      address: companyDetailsData.address,
+      pincode: companyDetailsData.pincode,
+      city: companyDetailsData.city,
+      state: companyDetailsData.state,
+      country: companyDetailsData.country,
+      phone: companyDetailsData.phone,
+      email: companyDetailsData.email,
+      website: companyDetailsData.website,
       PAN: companyDetailsData.PAN,
       GSTNO: companyDetailsData.GSTNO,
       TIN: companyDetailsData.TIN,
-      created_at: new Date(), // Assuming current timestamp
+      KEY: companyDetailsData.KEY,
+      updated_at: new Date(), // Assuming current timestamp for update
     };
 
-    // if (existingDetails) {
-    //   // Update the existing company details entry
-    //   await companyDetailsRepo.update(existingDetails.id, companyDetailsObj);
-    //   return { success: true, message: "Company details updated successfully!" };
-    // } else {
-    // Add the new company details entry
-    await companyDetailsRepo.save(companyDetailsObj);
-    return {
-      success: true,
-      message: "New company details added successfully!",
-    };
-    // }
+    if (existingCompanyDetails.length > 0) {
+      // Update the existing company details (assuming only one record exists)
+      const companyDetails = existingCompanyDetails[0];
+      Object.assign(companyDetails, companyDetailsObj);
+      await companyDetailsRepo.save(companyDetails);
+      return {
+        success: true,
+        message: "Company details updated successfully!",
+      };
+    } else {
+      // Create new company details
+      companyDetailsObj.created_at = new Date(); // Adding created_at timestamp for new record
+      const newCompanyDetails = companyDetailsRepo.create(companyDetailsObj);
+      await companyDetailsRepo.save(newCompanyDetails);
+      return {
+        success: true,
+        message: "New company details added successfully!",
+      };
+    }
   } catch (error) {
     console.error("Error adding or updating company details:", error);
     return {
@@ -2903,3 +2976,70 @@ ipcMain.handle("create-invoice-from-quotation", async (event, quotationNo) => {
     return { success: false, message: "Error creating invoice from quotation" };
   }
 });
+
+ipcMain.handle("update-product-quantity", async (ev, args) => {
+  try {
+    const response = await updateProductDetails(args);
+    return response;
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Failed to update product quantity",
+    };
+  }
+});
+
+ipcMain.handle("get-product-quantity", async (ev, args) => {
+  const clientrepo = DBManager.getRepository(ProductQuantities);
+  const data = await clientrepo.find();
+  return {
+    data,
+  };
+});
+
+async function updateProductDetails(productDetailsData) {
+  try {
+    const productDetailsRepo = DBManager.getRepository(ProductQuantities);
+
+    for (const data of productDetailsData) {
+      // Check if the product already exists
+      let existingProductDetails = await productDetailsRepo.findOne({
+        where: { Product: data.Product },
+      });
+
+      if (existingProductDetails) {
+        // Update the existing product's quantity
+        existingProductDetails.Quantity = data.Quantity; // Update the quantity
+        existingProductDetails.updated_at = new Date();
+        await productDetailsRepo.save(existingProductDetails);
+        console.log(
+          `Product details for ${data.Product} updated successfully!`
+        );
+      } else {
+        // Create new product details
+        const newProductDetails = productDetailsRepo.create({
+          Product: data.Product,
+          Quantity: data.Quantity, // Set the quantity
+          created_at: new Date(),
+          updated_at: new Date(),
+        });
+        await productDetailsRepo.save(newProductDetails);
+        console.log(
+          `New product details for ${data.Product} added successfully!`
+        );
+      }
+    }
+
+    return {
+      success: true,
+      message: "Product details processed successfully!",
+    };
+  } catch (error) {
+    console.error("Error adding or updating product details:", error);
+    return {
+      success: false,
+      message: "Error adding or updating product details",
+    };
+  }
+}

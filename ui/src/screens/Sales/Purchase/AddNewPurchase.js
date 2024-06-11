@@ -11,7 +11,6 @@ import React, { useState, useEffect } from "react";
 import { ProductInvoiceTable } from "../components/ProductInvoiceTable";
 import SelectComp from "../components/SelectComp";
 import {
-  get_all_client_option,
   get_all_product_option,
   tax_type,
   uom_type,
@@ -24,6 +23,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import BackButton from "../../../assets/Buttons/BackButton";
 import ModuleDropDown from "../../../assets/DropDown/ModuleDropDown";
+import { useNavigate } from "react-router-dom";
 
 const TABLE_HEAD = [
   "No",
@@ -42,12 +42,10 @@ const TABLE_HEAD = [
 ];
 
 const vendor_option = await get_all_vendor_option();
-
 let product_option = await get_all_product_option();
 let companyDetails = await get_company_details();
 let tax_option = tax_type();
 let uom_option = uom_type();
-console.log(product_option);
 export default function NewPurchasePage() {
   useEffect(() => {
     document.title = "New Purchase Order";
@@ -75,7 +73,6 @@ export default function NewPurchasePage() {
     Qty: "",
     Unit_Price: "",
     Tax: "GST Rate 0%",
-    Location: "",
     Notes: "",
     Private_Notes: "",
     Shipping_Charges: 0,
@@ -84,7 +81,7 @@ export default function NewPurchasePage() {
     Total_Tax: 0,
   };
   const [formData, setFormData] = useState(initialValues);
-
+  const navigate = useNavigate();
   useEffect(() => {
     // Convert the issue date to a Date object
     const issueDate = new Date(formData.Issue_Date);
@@ -161,7 +158,6 @@ export default function NewPurchasePage() {
 
   useEffect(() => {
     if (formData.Vendor.length > 1) {
-      console.log("inside if", selectedClient);
       handleFieldChange("Place_Of_Supply", selectedClient[0]?.state);
     }
   }, [selectedClient]);
@@ -303,6 +299,10 @@ export default function NewPurchasePage() {
     const product = data.find((item) => item.text === productText);
     return product ? product.purchase_price : null;
   };
+  const getProductTax = (productText, data) => {
+    const product = data.find((item) => item.text === productText);
+    return product ? product.tax : null;
+  };
   const generateFieldValue = () => {
     const today = new Date();
     const day = ("0" + today.getDate()).slice(-2); // Get day with leading zero if needed
@@ -348,8 +348,6 @@ export default function NewPurchasePage() {
     setIsInvoicePreviewOpen(false);
   };
 
-  console.log(formData);
-
   const renderInvoicePreview = () => {
     const handleSave = async () => {
       const invoiceData = {
@@ -369,7 +367,6 @@ export default function NewPurchasePage() {
         Discount_on_all: formData.Discount_on_all,
         Total_BeforeTax: formData.Total_BeforeTax,
         Total_Tax: formData.Total_Tax,
-        Location: formData.Location,
       };
       const res = await window.api.invoke(
         "add-new-purchase-order",
@@ -524,8 +521,7 @@ export default function NewPurchasePage() {
               isinput={false}
               handle={(values) => {
                 if (values === "Add New Vendor") {
-                  api_show_vendor();
-                  return;
+                  navigate("/sales/vendors/show");
                 } else {
                   handleFieldChange("Vendor", values);
                 }
@@ -589,8 +585,7 @@ export default function NewPurchasePage() {
               isinput={false}
               handle={(values) => {
                 if (values === "Add New Product") {
-                  api_show_product();
-                  return;
+                  navigate("/sales/product_service/show");
                 } else {
                   handleFieldChange("Product", values);
                   handleFieldChange(
@@ -607,6 +602,10 @@ export default function NewPurchasePage() {
                   handleFieldChange(
                     "Description",
                     getProductDescription(values, product_option),
+                  );
+                  handleFieldChange(
+                    "Tax",
+                    getProductTax(values, product_option),
                   );
                 }
               }}
@@ -644,25 +643,18 @@ export default function NewPurchasePage() {
             />
           </div>
           <div className="mr-12">
-            <SelectComp
-              label="Tax"
-              options={tax_option}
-              isinput={false}
-              handle={(values) => {
-                handleFieldChange("Tax", getTextForValue(tax_option, values));
-              }}
-            />
-          </div>
-          <div className="mr-12">
             <Input
-              variant="outlined"
-              label="Location"
-              placeholder="Location"
-              onChange={(e) => {
-                handleFieldChange("Location", e.target.value);
-              }}
+              label="Tax"
+              placeholder="Tax"
+              value={
+                formData.Product !== ""
+                  ? getProductTax(formData.Product, product_option)
+                  : ""
+              }
+              disabled
             />
           </div>
+          <div className="mr-12"></div>
 
           <div className="mr-12">
             <Button
@@ -735,9 +727,7 @@ export default function NewPurchasePage() {
                       handle={(values) => {
                         handleFieldChange(
                           "Shipping_Tax",
-                          getIntegerFromPercentageString(
-                            getTextForValue(tax_option, values),
-                          ),
+                          getIntegerFromPercentageString(values),
                         );
                       }}
                     />

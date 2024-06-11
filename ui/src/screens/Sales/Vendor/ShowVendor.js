@@ -56,7 +56,6 @@ function convertDateToString(date) {
 
 const vendors = await get_all_vendor_option();
 vendors.shift();
-console.log(vendors);
 
 const handleDeleteVendor = async (obj) => {
   const res = await window.api.invoke(
@@ -103,20 +102,17 @@ const VENDOR_ROWS = vendors.map((x) => {
     ),
   };
 });
-console.log(VENDOR_ROWS);
 export default function ShowVendors() {
   useEffect(() => {
     document.title = "Show Vendors";
   });
 
-  //console.log(JSON.stringify(combinedArray));
   const [filterValues, setFilterValues] = useState({
     Product: "",
     Type: "",
     Location: "",
   });
   const [fields, setFields] = useState(initialValue);
-  //console.log(filterValues);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
   const openModal = (data) => {
@@ -189,7 +185,6 @@ export default function ShowVendors() {
   //   let filteredData = adjustedData
   //     .flat()
   //     .filter((object) => {
-  //       //console.log(object);
   //       return nonEmptyFields.every((field) => {
   //         if (field !== "Product") {
   //           return object[field]?.includes(filterValues[field]);

@@ -20,6 +20,7 @@ import {
   get_all_employee,
   get_all_employee_payments,
   get_all_employee_leaves,
+  get_all_employee_attendance,
 } from "../../../src/utils/SelectOptions";
 import HomeButton from "../../assets/Buttons/HomeButton";
 import { saveAs } from "file-saver";
@@ -47,6 +48,14 @@ const TABLE_HEAD_BALANCE = [
 ];
 
 const TABLE_HEAD_LEAVE = ["No", "Employee Name", "Leave Date", "Leave Reason"];
+
+const TABLE_HEAD_ATTENDANCE_VIEW = [
+  "No",
+  "Employee Name",
+  "Date",
+  "IN Time",
+  "Out Time",
+];
 
 const initialValue = {
   Employee_name: "",
@@ -96,10 +105,11 @@ const generateDropDownList = (data) => {
 const allEmployees = await get_all_employee();
 const allPayments = await get_all_employee_payments();
 const allLeaves = await get_all_employee_leaves();
+const allAttendance = await get_all_employee_attendance();
 
 const uniqueMonths = [
   ...new Set(
-    allPayments.map((doc) => new Date(doc.Payment_date).getMonth() + 1),
+    allPayments.map((doc) => new Date(doc.Payment_date).getMonth() + 1)
   ),
 ];
 
@@ -107,7 +117,13 @@ const uniqueLeaveMonths = [
   ...new Set(allLeaves.map((doc) => new Date(doc.leaveDate).getMonth() + 1)),
 ];
 
-console.log(uniqueLeaveMonths);
+const uniqueAttendanceMonths = [
+  ...new Set(
+    allAttendance.map((doc) => new Date(doc.todayDate).getMonth() + 1)
+  ),
+];
+
+console.log(uniqueAttendanceMonths);
 
 const LEAVE_ROWS = allLeaves.map((item) => {
   return {
@@ -120,7 +136,7 @@ const LEAVE_ROWS = allLeaves.map((item) => {
 const handleDeleteEmployee = async (obj) => {
   const res = await window.api.invoke(
     "delete-employee-by-contact-no",
-    obj.Contact_No,
+    obj.Contact_No
   );
   alert(res.message);
 };
@@ -131,14 +147,16 @@ export default function ShowEmployee() {
   });
 
   const person_option = Array.from(
-    new Set(allEmployees.flat().map((x) => x.Employee_name)),
+    new Set(allEmployees.flat().map((x) => x.Employee_name))
+  );
+
+  const person_title_option = Array.from(
+    new Set(allEmployees.flat().map((x) => x.Employee_title))
   );
 
   const [filterValues, setFilterValues] = useState({
     Person: "",
     Type: "",
-    Issue_From: "",
-    Issue_To: "",
   });
   const [fields, setFields] = useState(initialValue);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -148,6 +166,9 @@ export default function ShowEmployee() {
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
   const [isBalanceModalOpen, setBalanceModalOpen] = useState(false);
   const [isAttendanceModalOpen, setAttendanceModalOpen] = useState(false);
+  const [isAttendanceDataModalOpen, setAttendanceDataModalOpen] =
+    useState(false);
+  const [monthWiseAttendance, setMonthWiseAttendance] = useState([]);
   const [isLeaveModalOpen, setLeaveModalOpen] = useState(false);
 
   const [balanceData, setBalanceData] = useState([]);
@@ -160,8 +181,10 @@ export default function ShowEmployee() {
   const [monthWiseLeave, setMonthWiseLeave] = useState([]);
 
   const [employeeApplyingAttendance, setEmployeeApplyingAttendance] = useState(
-    initialAttendanceData,
+    initialAttendanceData
   );
+  const [employeeViewingAttendance, setEmployeeViewingAttendance] =
+    useState("");
 
   // Function to open payment modal
   const openPaymentModal = (obj) => {
@@ -199,10 +222,8 @@ export default function ShowEmployee() {
       const paymentMonth = new Date(doc["Payment Date"]).getMonth() + 1;
       return paymentMonth === getMonthNumber(month);
     });
-    console.log(filteredDocs);
     return filteredDocs;
   }
-
   function getMonthNumber(shortMonthName) {
     const shortMonthNames = [
       "JAN",
@@ -228,9 +249,32 @@ export default function ShowEmployee() {
       const paymentMonth = new Date(doc["Leave Date"]).getMonth() + 1;
       return paymentMonth === getMonthNumber(month);
     });
-    console.log("log", filteredDocs);
     return filteredDocs;
   }
+
+  const monthMap = {
+    JAN: 0,
+    FEB: 1,
+    MAR: 2,
+    APR: 3,
+    MAY: 4,
+    JUN: 5,
+    JUL: 6,
+    AUG: 7,
+    SEP: 8,
+    OCT: 9,
+    NOV: 10,
+    DEC: 11,
+  };
+
+  const filterAttendanceData = (data, employeeName, month) => {
+    const monthIndex = monthMap[month.toUpperCase()];
+
+    return data.filter(({ employeeName: name, todayDate }) => {
+      const entryDate = new Date(todayDate);
+      return name === employeeName && entryDate.getMonth() === monthIndex;
+    });
+  };
 
   const openBalanceModal = (obj) => {
     setBalanceData(
@@ -245,7 +289,7 @@ export default function ShowEmployee() {
             "Payment Type": items.Payment_type,
             "Payment Notes": items.Payment_notes,
           };
-        }),
+        })
     );
     setBalanceModalOpen(true);
   };
@@ -270,10 +314,23 @@ export default function ShowEmployee() {
     setEmployeeApplyingAttendance(initialAttendanceData);
   };
 
+  const openAttendanceDataModal = (obj) => {
+    setAttendanceDataModalOpen(true);
+    setEmployeeViewingAttendance(obj.Employee_name);
+    console.log(obj);
+  };
+
+  // Function to close attendance modal
+  const closeAttendanceDataModal = () => {
+    setAttendanceDataModalOpen(false);
+    setEmployeeViewingAttendance("");
+    setMonthWiseAttendance([]);
+  };
+
   const handleAttendanceSave = async () => {
     const res = await window.api.invoke(
       "add-employee-attendance",
-      employeeApplyingAttendance,
+      employeeApplyingAttendance
     );
     alert(res.message);
     setEmployeeApplyingAttendance(initialAttendanceData);
@@ -298,7 +355,7 @@ export default function ShowEmployee() {
   const handleLeaveSave = async () => {
     const res = await window.api.invoke(
       "add-employee-leave",
-      employeeApplyingLeave,
+      employeeApplyingLeave
     );
     alert(res.message);
     setEmployeeApplyingLeave(initialLeaveData);
@@ -322,7 +379,7 @@ export default function ShowEmployee() {
   const handlePaymentSave = async () => {
     const res = await window.api.invoke(
       "add-new-employee-payment",
-      paymentData,
+      paymentData
     );
     alert(res.message);
     setPaymentData(initialPaymentData);
@@ -408,7 +465,7 @@ export default function ShowEmployee() {
               </svg>
             </Button>
           </Tooltip>
-          <Tooltip content="Attendance">
+          <Tooltip content="Mark Attendance">
             <Button
               color="white"
               size="sm" // Adjusted button size to xs
@@ -430,6 +487,32 @@ export default function ShowEmployee() {
                   stroke-linejoin="round"
                   stroke-width="2"
                   d="M7 6H5m2 3H5m2 3H5m2 3H5m2 3H5m11-1a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2M7 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm8 7a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                />
+              </svg>
+            </Button>
+          </Tooltip>
+          <Tooltip content="Attendance Details">
+            <Button
+              color="white"
+              size="sm" // Adjusted button size to xs
+              onClick={() => openAttendanceDataModal(x)}
+              className="py-1 px-2" // Adjusted padding
+            >
+              <svg
+                class="w-6 h-6 text-gray-800 dark:text-white"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M19 7h1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h11.5M7 14h6m-6 3h6m0-10h.5m-.5 3h.5M7 7h3v3H7V7Z"
                 />
               </svg>
             </Button>
@@ -497,32 +580,21 @@ export default function ShowEmployee() {
       .flat()
       .filter((object) => {
         return nonEmptyFields.every((field) => {
-          if (field === "Issue_From" || field === "Issue_To") {
-            // Check if Issue Date lies in the range between Issue_From and Issue_To
-            const fromDate = new Date(filterValues.Issue_From);
-            const toDate = new Date(filterValues.Issue_To);
-            const issueDate = new Date(convertDateToString(object.Date));
-            return issueDate >= fromDate && issueDate <= toDate;
-          } else if (field === "Person") {
-            return object["Person_name"] === filterValues[field];
-          } else if (field === "Type" && filterValues[field] === "Other") {
-            return (
-              object["Expense_type"] !== "Food" &&
-              object["Expense_type"] !== "Fuel" &&
-              object["Expense_type"] !== "Transportation" &&
-              object["Expense_type"] !== "Office Expense"
-            );
+          if (field === "Person") {
+            return object["Employee_name"] === filterValues[field];
           } else {
-            return object["Expense_type"] === filterValues[field];
+            return object["Employee_title"] === filterValues[field];
           }
         });
       })
       .map((obj) => {
         return {
-          "Person Name": obj.Person_name,
-          "Expense Type": obj.Expense_type,
-          Amount: obj.Amount,
-          Date: obj.Date ? convertDateToString(obj.Date) : "",
+          "Employee Name": obj.Employee_name,
+          "Employee Title": obj.Employee_title,
+          Salary: obj.Salary,
+          "Contact Number": obj.Contact_No,
+          Address: obj.Address,
+          "Joining Date": convertDateToString(obj.Joining_Date),
           Notes: obj.Notes,
           Action: (
             <>
@@ -530,7 +602,7 @@ export default function ShowEmployee() {
                 <Button
                   color="white"
                   size="sm" // Adjusted button size to xs
-                  // onClick={() => handleDeleteEmployee(obj)}
+                  onClick={() => openPaymentModal(obj)}
                   className="py-1 px-2" // Adjusted padding
                 >
                   <svg
@@ -545,8 +617,113 @@ export default function ShowEmployee() {
                     <path
                       stroke="currentColor"
                       stroke-linecap="round"
+                      stroke-linejoin="round"
                       stroke-width="2"
-                      d="M8 7V6a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-1M3 18v-7a1 1 0 0 1 1-1h11a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1Zm8-3.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z"
+                      d="M8 17.345a4.76 4.76 0 0 0 2.558 1.618c2.274.589 4.512-.446 4.999-2.31.487-1.866-1.273-3.9-3.546-4.49-2.273-.59-4.034-2.623-3.547-4.488.486-1.865 2.724-2.899 4.998-2.31.982.236 1.87.793 2.538 1.592m-3.879 12.171V21m0-18v2.2"
+                    />
+                  </svg>
+                </Button>
+              </Tooltip>
+              <Tooltip content="Balance">
+                <Button
+                  color="white"
+                  size="sm" // Adjusted button size to xs
+                  onClick={() => openBalanceModal(obj)}
+                  className="py-1 px-2" // Adjusted padding
+                >
+                  <svg
+                    class="w-[24px] h-[24px] text-gray-800 dark:text-white"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M17 8H5m12 0a1 1 0 0 1 1 1v2.6M17 8l-4-4M5 8a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.6M5 8l4-4 4 4m6 4h-4a2 2 0 1 0 0 4h4a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1Z"
+                    />
+                  </svg>
+                </Button>
+              </Tooltip>
+              <Tooltip content="Mark Attendance">
+                <Button
+                  color="white"
+                  size="sm" // Adjusted button size to xs
+                  onClick={() => openAttendanceModal(obj)}
+                  className="py-1 px-2" // Adjusted padding
+                >
+                  <svg
+                    class="w-6 h-6 text-gray-800 dark:text-white"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M7 6H5m2 3H5m2 3H5m2 3H5m2 3H5m11-1a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2M7 3h11a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm8 7a2 2 0 1 1-4 0 2 2 0 0 1 4 0Z"
+                    />
+                  </svg>
+                </Button>
+              </Tooltip>
+              <Tooltip content="Attendance Details">
+                <Button
+                  color="white"
+                  size="sm" // Adjusted button size to xs
+                  onClick={() => openAttendanceDataModal(obj)}
+                  className="py-1 px-2" // Adjusted padding
+                >
+                  <svg
+                    class="w-6 h-6 text-gray-800 dark:text-white"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 7h1v12a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h11.5M7 14h6m-6 3h6m0-10h.5m-.5 3h.5M7 7h3v3H7V7Z"
+                    />
+                  </svg>
+                </Button>
+              </Tooltip>
+              <Tooltip content="Leave">
+                <Button
+                  color="white"
+                  size="sm" // Adjusted button size to xs
+                  onClick={() => openLeaveModal(obj)}
+                  className="py-1 px-2" // Adjusted padding
+                >
+                  <svg
+                    class="w-6 h-6 text-gray-800 dark:text-white"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 10h16m-8-3V4M7 7V4m10 3V4M5 20h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Zm3-7h.01v.01H8V13Zm4 0h.01v.01H12V13Zm4 0h.01v.01H16V13Zm-8 4h.01v.01H8V17Zm4 0h.01v.01H12V17Zm4 0h.01v.01H16V17Z"
                     />
                   </svg>
                 </Button>
@@ -555,7 +732,7 @@ export default function ShowEmployee() {
                 <Button
                   color="white"
                   size="sm" // Adjusted button size to xs
-                  // onClick={() => handleDeleteEmployee(obj)}
+                  onClick={() => handleDeleteEmployee(obj)}
                   className="py-1 px-2" // Adjusted padding
                 >
                   <svg
@@ -576,7 +753,7 @@ export default function ShowEmployee() {
                     />
                   </svg>
                 </Button>
-              </Tooltip>{" "}
+              </Tooltip>
             </>
           ),
         };
@@ -600,12 +777,40 @@ export default function ShowEmployee() {
     window.location.reload();
   };
 
-  console.log(monthWisePayment);
-  console.log(EXPENSES_ROWS);
   let salaryToRender = EXPENSES_ROWS.filter(
-    (item) => item["Employee Name"] === monthWisePayment[0]?.Employee,
+    (item) => item["Employee Name"] === monthWisePayment[0]?.Employee
   )[0]?.Salary;
-  console.log(salaryToRender);
+
+  const requiredFields = [
+    "Employee_name",
+    "Age",
+    "Contact_No",
+    "Address",
+    "Joining_Date",
+    "Employee_title",
+    "Salary",
+  ];
+
+  const isFormIncomplete = requiredFields.some((field) => fields[field] === "");
+
+  const requiredFieldsPayment = [
+    "Employee_name",
+    "Payment_date",
+    "Amount",
+    "Payment_type",
+    "Payment_notes",
+  ];
+
+  const isPaymentFormIncomplete = requiredFieldsPayment.some(
+    (field) => paymentData[field] === ""
+  );
+
+  const requiredFieldsLeave = ["employeeName", "leaveDate", "leaveReason"];
+
+  const isLeaveFormIncomplete = requiredFieldsLeave.some(
+    (field) => employeeApplyingLeave[field] === ""
+  );
+
   return (
     <div className="flex flex-col w-full h-full px-5">
       <div className="flex flex-col border border-gray-400 p-3 mb-3">
@@ -627,37 +832,15 @@ export default function ShowEmployee() {
               }}
             />
           </div>
-          <div className=" mr-12">
-            <div className="flex mr-12 gap-x-2">
-              <Input
-                variant="outlined"
-                label="Issue From"
-                placeholder="Issue From"
-                type="date"
-                onChange={(e) =>
-                  handleFilterChange("Issue_From", e.target.value)
-                }
-              />
-
-              <Input
-                variant="outlined"
-                label="Issue To "
-                placeholder="Issue To"
-                type="date"
-                onChange={(e) => handleFilterChange("Issue_To", e.target.value)}
-              />
-            </div>
-          </div>
           <div className="flex mr-12 gap-x-2">
             <SelectComp
               variant="outlined"
-              label="Type"
-              placeholder="Type"
-              options={generateDropDownList(expense_options)}
+              label="Job Title"
+              placeholder="Job Title"
+              options={generateDropDownList(person_title_option)}
               handle={(values) => {
                 handleFilterChange("Type", values);
               }}
-              disabled
             />
           </div>
         </div>
@@ -676,9 +859,6 @@ export default function ShowEmployee() {
       </div>
       <hr />
       <div className="flex my-2 flex-row-reverse">
-        <div className="mx-3">
-          <Button>Export</Button>
-        </div>
         <div className="mx-3">
           <Button onClick={openModal}>Add New Employee</Button>
         </div>
@@ -799,6 +979,7 @@ export default function ShowEmployee() {
             <Button
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               onClick={handleSave}
+              disabled={isFormIncomplete}
             >
               Save
             </Button>
@@ -878,6 +1059,7 @@ export default function ShowEmployee() {
             <Button
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               onClick={handlePaymentSave}
+              disabled={isPaymentFormIncomplete}
             >
               Save
             </Button>
@@ -901,12 +1083,12 @@ export default function ShowEmployee() {
                 isInput={false}
                 handle={(values) => {
                   setMonthWisePayment(
-                    filterDocumentsByMonth(values, balanceData),
+                    filterDocumentsByMonth(values, balanceData)
                   );
                   setPaymentDatamentForTheMonth(
                     calculateNonSalaryTotal(
-                      filterDocumentsByMonth(values, balanceData),
-                    ),
+                      filterDocumentsByMonth(values, balanceData)
+                    )
                   );
                 }}
               />
@@ -940,7 +1122,7 @@ export default function ShowEmployee() {
           handleOpen={openAttendanceModal}
         >
           <DialogHeader toggler={closeAttendanceModal}>
-            Employee Attendance Details
+            Employee Attendance In/Out
           </DialogHeader>
           <DialogBody>
             <div className="Employee-attendance-modal">
@@ -1002,8 +1184,61 @@ export default function ShowEmployee() {
             <Button
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               onClick={handleAttendanceSave}
+              disabled={
+                employeeApplyingAttendance.inTime === "" ||
+                employeeApplyingAttendance.outTime === ""
+              }
             >
               Save
+            </Button>
+          </DialogFooter>
+        </Dialog>
+
+        {/* Attendance Data Modal */}
+        <Dialog
+          size="l"
+          open={isAttendanceDataModalOpen}
+          handleOpen={openAttendanceDataModal}
+        >
+          <DialogHeader toggler={closeAttendanceDataModal}>
+            Employee Attendance Details
+          </DialogHeader>
+          <DialogBody>
+            <div style={{ marginBottom: 20, width: 100 }}>
+              <SelectComp
+                label="Month"
+                options={generateMonths(uniqueAttendanceMonths)}
+                isInput={false}
+                handle={(values) => {
+                  setMonthWiseAttendance(
+                    filterAttendanceData(
+                      allAttendance,
+                      employeeViewingAttendance,
+                      values
+                    )
+                  );
+                }}
+              />
+            </div>
+            <ProductInvoiceTable
+              TABLE_HEAD={TABLE_HEAD_ATTENDANCE_VIEW}
+              TABLE_ROWS={monthWiseAttendance.map((x) => {
+                return {
+                  "Employee Name": x.employeeName,
+                  Date: convertDateToString(x.todayDate),
+                  "IN Time": x.inTime,
+                  "Out Time": x.outTime,
+                };
+              })}
+            />
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              onClick={closeAttendanceDataModal}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              style={{ marginRight: 5 }}
+            >
+              Close
             </Button>
           </DialogFooter>
         </Dialog>
@@ -1067,8 +1302,7 @@ export default function ShowEmployee() {
             <ProductInvoiceTable
               TABLE_HEAD={TABLE_HEAD_LEAVE}
               TABLE_ROWS={monthWiseLeave.filter(
-                (x) =>
-                  x["Employee Name"] === employeeApplyingLeave.employeeName,
+                (x) => x["Employee Name"] === employeeApplyingLeave.employeeName
               )}
             />
           </DialogBody>
@@ -1083,6 +1317,7 @@ export default function ShowEmployee() {
             <Button
               className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
               onClick={handleLeaveSave}
+              disabled={isLeaveFormIncomplete}
             >
               Save
             </Button>

@@ -23,6 +23,7 @@ import {
 } from "../../../utils/SelectOptions";
 import { saveAs } from "file-saver";
 import HomeButton from "../../../assets/Buttons/HomeButton";
+import adjustQuantities from "./InventoryLogic";
 
 const TABLE_HEAD = [
   "No",
@@ -39,15 +40,12 @@ const TABLE_HEAD_MAIN = [
   "Description",
   "Type",
   "Price",
-  "Location",
   "Quantity",
   "Action",
 ];
 let product_option = await get_all_product_option();
 let invoices = await get_all_invoices();
 let purchaseOrders = await get_all_purchase_orders();
-
-console.log(product_option);
 
 const getUomOptions = (data) => {
   let types = data.map((x) => x.uom).filter((y) => y !== undefined);
@@ -62,73 +60,9 @@ function convertDropdownData(data) {
   }));
 }
 
-console.log(getUomOptions(product_option));
-
-function adjustQuantities(purchaseData, invoiceData) {
-  const soldQuantities = {};
-
-  // Calculate sold quantities
-  invoiceData.forEach((invoice) => {
-    invoice.rowData.forEach((row) => {
-      const productName = row.Product;
-      const soldQuantity = parseInt(row.Qty);
-
-      if (soldQuantities[productName]) {
-        soldQuantities[productName] += soldQuantity;
-      } else {
-        soldQuantities[productName] = soldQuantity;
-      }
-    });
-  });
-
-  // Initialize a map to store combined data for each product
-  const combinedDataMap = new Map();
-
-  // Combine purchase data for the same product
-  purchaseData.forEach((purchase) => {
-    purchase.rowsData.forEach((row) => {
-      const productName = row.Product;
-
-      // Check if the product already exists in the combined data map
-      if (combinedDataMap.has(productName)) {
-        // If the product exists, update its quantity and location
-        const existingData = combinedDataMap.get(productName);
-        existingData.Quantity += parseInt(row.Qty);
-        if (
-          purchase.Location &&
-          !existingData.Location.includes(purchase.Location)
-        ) {
-          existingData.Location += `, ${purchase.Location}`;
-        }
-      } else {
-        // If the product doesn't exist, add it to the combined data map
-        combinedDataMap.set(productName, {
-          Product: row.Product,
-          Description: row.Description,
-          Type: row.UoM, // Assuming UoM represents the type
-          Price: row.UnitPrice, // Assuming UnitPrice represents the price
-          Location: purchase.Location || null,
-          Quantity: parseInt(row.Qty),
-        });
-      }
-    });
-  });
-
-  // Adjust quantities based on sold quantities
-  combinedDataMap.forEach((data) => {
-    const productName = data.Product;
-    if (soldQuantities[productName]) {
-      data.Quantity -= soldQuantities[productName];
-    }
-  });
-
-  // Convert combined data map to array
-  const adjustedData = Array.from(combinedDataMap.values());
-
-  return adjustedData;
-}
-
 const adjustedData = adjustQuantities(purchaseOrders.flat(), invoices.flat());
+
+console.log(adjustedData);
 
 export default function Inventory() {
   useEffect(() => {
@@ -173,13 +107,10 @@ export default function Inventory() {
     return result;
   }
 
-  //console.log(JSON.stringify(combinedArray));
   const [filterValues, setFilterValues] = useState({
     Product: "",
     Type: "",
-    Location: "",
   });
-  //console.log(filterValues);
   const [filterData, setFilterData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
@@ -195,7 +126,6 @@ export default function Inventory() {
     combinedArray,
     selectedProduct.Product,
   );
-  //console.log(selectedProduct);
   const nonEmptyValues = () => {
     return Object.keys(filterValues).filter((key) => filterValues[key] !== "");
   };
@@ -211,7 +141,6 @@ export default function Inventory() {
       Description: obj.Description,
       Type: obj.Type,
       Price: obj.Price,
-      Location: obj.Location,
       Quantity: obj.Quantity,
       ActionButton: (
         <>
@@ -253,7 +182,6 @@ export default function Inventory() {
     let filteredData = adjustedData
       .flat()
       .filter((object) => {
-        //console.log(object);
         return nonEmptyFields.every((field) => {
           if (field !== "Product") {
             return object[field]?.includes(filterValues[field]);
@@ -268,7 +196,6 @@ export default function Inventory() {
           Description: obj.Description,
           Type: obj.Type,
           Price: obj.Price,
-          Location: obj.Location,
           Quantity: obj.Quantity,
           ActionButton: (
             <>
@@ -338,7 +265,7 @@ export default function Inventory() {
               }}
             />
           </div>
-          <div className=" mr-12">
+          <div className="flex mr-12 gap-x-2">
             <SelectComp
               variant="outlined"
               label="Type"
@@ -348,14 +275,6 @@ export default function Inventory() {
               handle={(values) => {
                 handleFilterChange("Type", values);
               }}
-            />
-          </div>
-          <div className="flex mr-12 gap-x-2">
-            <Input
-              variant="outlined"
-              label="Location"
-              placeholder="Location"
-              onChange={(e) => handleFilterChange("Location", e.target.value)}
             />
           </div>
         </div>

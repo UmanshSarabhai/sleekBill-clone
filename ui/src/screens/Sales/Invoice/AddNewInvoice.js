@@ -15,7 +15,7 @@ import {
   get_all_product_option,
   tax_type,
   uom_type,
-  get_all_invoices,
+  get_product_quantities,
   get_company_details,
 } from "../../../utils/SelectOptions";
 import { api_show_client, api_show_product } from "../../../utils/PageApi";
@@ -24,6 +24,9 @@ import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import BackButton from "../../../assets/Buttons/BackButton";
 import ModuleDropDown from "../../../assets/DropDown/ModuleDropDown";
+import { useNavigate, useLocation } from "react-router-dom";
+import AddNewClientModal from "../Client/NewClientModal";
+import AddNewProductModal from "../ProductService/NewProductModal";
 
 const customLabelStyles = {
   label: {
@@ -86,10 +89,20 @@ let product_option = await get_all_product_option();
 let companyDetails = await get_company_details();
 let tax_option = tax_type();
 let uom_option = uom_type();
-export default function NewInvoicePage() {
+let current_stock = await get_product_quantities();
+
+console.log(current_stock.data);
+
+export default function () {
   useEffect(() => {
     document.title = "New Invoice";
   });
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { data } = location.state || {};
+
+  console.log("The Data:", JSON.stringify(data));
 
   const initialValues = {
     Client: "",
@@ -116,6 +129,8 @@ export default function NewInvoicePage() {
     Total_Tax: 0,
   };
   const [formData, setFormData] = useState(initialValues);
+
+  console.log(formData);
 
   useEffect(() => {
     // Convert the issue date to a Date object
@@ -175,6 +190,8 @@ export default function NewInvoicePage() {
     getAllClients();
   }, []);
 
+  console.log(product_option);
+
   useEffect(() => {
     setSelectedClient(
       allClient.filter((x) => x.client_name === formData.Client),
@@ -204,6 +221,15 @@ export default function NewInvoicePage() {
       handleFieldChange("Place_Of_Supply", selectedClient[0]?.state);
     }
   }, [selectedClient]);
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+
+  const handleOpen = () => setIsModalOpen(true);
+  const handleClose = () => setIsModalOpen(false);
+
+  const handleProductOpen = () => setIsProductModalOpen(true);
+  const handleProductClose = () => setIsProductModalOpen(false);
 
   const updateRowsWithDiscount = (discount) => {
     const updatedRows = rows.map((item) => {
@@ -250,7 +276,10 @@ export default function NewInvoicePage() {
     HSNSAC: "HSN-" + item.Product.substring(0, 3),
     Description: item.Description || "Sample Service Description",
     UoM: item.UoM || "Boxes",
-    Qty: item.Qty ? item.Qty : "1",
+    Qty:
+      item.Qty === undefined || item.Qty === null || item.Qty === ""
+        ? 1
+        : item.Qty,
     UnitPrice: item.Unit_Price ? item.Unit_Price : "1.00",
     Value:
       item.Discount === ""
@@ -342,6 +371,12 @@ export default function NewInvoicePage() {
     const product = data.find((item) => item.text === productText);
     return product ? product.price : null;
   };
+  const getProductTax = (productText, data) => {
+    const product = data.find((item) => item.text === productText);
+    return product ? product.tax : null;
+  };
+
+  console.log(getProductTax(formData.Product, product_option));
   const generateFieldValue = () => {
     const today = new Date();
     const day = ("0" + today.getDate()).slice(-2); // Get day with leading zero if needed
@@ -412,6 +447,7 @@ export default function NewInvoicePage() {
 
       const res = await window.api.invoke("add-new-invoice", invoiceData);
       alert(res.message); // Handle the response as needed
+      window.location.reload();
     };
 
     if (isInvoicePreviewOpen) {
@@ -561,10 +597,9 @@ export default function NewInvoicePage() {
               options={client_option}
               isinput={false}
               handle={(values) => {
-                console.log(values);
                 if (values === "Add New Client") {
-                  api_show_client();
-                  return;
+                  // navigate("/sales/client/show");
+                  handleOpen();
                 } else {
                   handleFieldChange("Client", values);
                 }
@@ -617,7 +652,6 @@ export default function NewInvoicePage() {
               isinput={false}
               value={formData.Payment_Term}
               handle={(values) => {
-                console.log(values);
                 handleFieldChange("Payment_Term", values);
               }}
             />
@@ -625,7 +659,7 @@ export default function NewInvoicePage() {
         </div>
 
         <div className="flex flex-row w-full justify-between my-2">
-          <div className=" mr-12">
+          <div className="mr-12">
             <Input
               variant="outlined"
               label="PO Date"
@@ -664,8 +698,8 @@ export default function NewInvoicePage() {
               isinput={false}
               handle={(values) => {
                 if (values === "Add New Product") {
-                  api_show_product();
-                  return;
+                  // navigate("/sales/product_service/show");
+                  handleProductOpen();
                 } else {
                   handleFieldChange("Product", values);
                   handleFieldChange(
@@ -679,6 +713,10 @@ export default function NewInvoicePage() {
                   handleFieldChange(
                     "Description",
                     getProductDescription(values, product_option),
+                  );
+                  handleFieldChange(
+                    "Tax",
+                    getProductTax(values, product_option),
                   );
                 }
               }}
@@ -708,7 +746,29 @@ export default function NewInvoicePage() {
               label="Qty"
               placeholder="Qty"
               type="number"
-              onChange={(e) => handleFieldChange("Qty", e.target.value)}
+              value={formData.Qty}
+              onChange={(e) => {
+                const product = current_stock.data.find(
+                  (item) => item.Product === formData.Product,
+                );
+
+                console.log(current_stock);
+
+                if (!product) {
+                  alert(`Product ${formData.Product} not found in stock.`);
+                  handleFieldChange("Qty", 0); // Set Qty to 0 or handle as needed
+                  return;
+                }
+
+                if (product.Quantity > e.target.value) {
+                  handleFieldChange("Qty", e.target.value);
+                } else {
+                  alert(
+                    `Only ${product.Quantity} quantities are available for ${product.Product}`,
+                  );
+                  handleFieldChange("Qty", product.Quantity);
+                }
+              }}
               style={{ minWidth: 100, width: 100 }}
               labelProps={{
                 className: "w-100",
@@ -746,21 +806,27 @@ export default function NewInvoicePage() {
             />
           </div>
           <div className="mr-12">
-            <SelectComp
+            <Input
               label="Tax"
               placeholder="Tax"
-              options={tax_option}
-              isinput={false}
-              handle={(values) => {
-                handleFieldChange("Tax", values);
-              }}
+              value={
+                formData.Product !== ""
+                  ? getProductTax(formData.Product, product_option)
+                  : ""
+              }
+              disabled
             />
           </div>
 
           <div className="mr-12">
             <Button
               onClick={() => setRows((pre) => [...pre, formData])}
-              disabled={formData.Client === "" || formData.Product === ""}
+              disabled={
+                formData.Client === "" ||
+                formData.Product === "" ||
+                formData.Qty === 0 ||
+                formData.Qty === "0"
+              }
               size="md"
             >
               +
@@ -828,12 +894,9 @@ export default function NewInvoicePage() {
                       options={tax_option}
                       isinput={false}
                       handle={(values) => {
-                        console.log(values);
                         handleFieldChange(
                           "Shipping_Tax",
-                          getIntegerFromPercentageString(
-                            getTextForValue(tax_option, values),
-                          ),
+                          getIntegerFromPercentageString(values),
                         );
                       }}
                     />
@@ -951,6 +1014,16 @@ export default function NewInvoicePage() {
             Preview
           </Button>
           {renderInvoicePreview()}
+          <AddNewClientModal
+            isOpen={isModalOpen}
+            handleOpen={handleOpen}
+            handleClose={handleClose}
+          />
+          <AddNewProductModal
+            isOpen={isProductModalOpen}
+            handleOpen={handleProductOpen}
+            handleClose={handleProductClose}
+          />
         </div>
       </div>
     </div>

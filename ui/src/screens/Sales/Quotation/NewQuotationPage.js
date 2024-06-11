@@ -24,6 +24,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import BackButton from "../../../assets/Buttons/BackButton";
 import ModuleDropDown from "../../../assets/DropDown/ModuleDropDown";
+import { useNavigate } from "react-router-dom";
 
 const TABLE_HEAD = [
   "No",
@@ -83,6 +84,8 @@ export default function NewQuotationPage() {
   useEffect(() => {
     document.title = "New Quotation";
   });
+
+  const navigate = useNavigate();
 
   const initialValues = {
     Client: "",
@@ -293,8 +296,6 @@ export default function NewQuotationPage() {
     Action: "DELETE",
   }));
 
-  console.log(JSON.stringify(companyDetails.data[0]));
-
   // Calculate total value
   const totalValue = rowData
     .reduce((accumulator, currentItem) => {
@@ -335,6 +336,10 @@ export default function NewQuotationPage() {
   const getProductPrice = (productText, data) => {
     const product = data.find((item) => item.text === productText);
     return product ? product.price : null;
+  };
+  const getProductTax = (productText, data) => {
+    const product = data.find((item) => item.text === productText);
+    return product ? product.tax : null;
   };
   const generateFieldValue = () => {
     const today = new Date();
@@ -554,9 +559,8 @@ export default function NewQuotationPage() {
               options={client_option}
               isinput={false}
               handle={(values) => {
-                if (values == "Add new Client") {
-                  api_show_client();
-                  return;
+                if (values == "Add New Client") {
+                  navigate("/sales/client/show");
                 } else {
                   handleFieldChange("Client", values);
                 }
@@ -656,8 +660,7 @@ export default function NewQuotationPage() {
               isinput={false}
               handle={(values) => {
                 if (values == "Add New Product") {
-                  api_show_product();
-                  return;
+                  navigate("/sales/product_service/show");
                 } else {
                   handleFieldChange("Product", values);
                   handleFieldChange(
@@ -673,25 +676,14 @@ export default function NewQuotationPage() {
                   );
                   handleFieldChange(
                     "Description",
-                    getProductDescription(
-                      getTextForValue(product_option, values),
-                      product_option,
-                    ),
+                    getProductDescription(values, product_option),
+                  );
+                  handleFieldChange(
+                    "Tax",
+                    getProductTax(values, product_option),
                   );
                 }
               }}
-            />
-          </div>
-          <div className="mr-12">
-            <Input
-              variant="outlined"
-              label="Description"
-              placeholder="Description"
-              value={
-                formData.Description !== ""
-                  ? getProductDescription(formData.Product, product_option)
-                  : ""
-              }
             />
           </div>
           <div className="mr-12">
@@ -704,6 +696,7 @@ export default function NewQuotationPage() {
                   ? getProductUOM(formData.Product, product_option)
                   : ""
               }
+              disabled
             />
           </div>
           <div className="mr-12">
@@ -724,6 +717,7 @@ export default function NewQuotationPage() {
                   ? getProductPrice(formData.Product, product_option)
                   : ""
               }
+              disabled
             />
           </div>
           <div className=" mr-12">
@@ -735,20 +729,27 @@ export default function NewQuotationPage() {
             />
           </div>
           <div className="mr-12">
-            <SelectComp
+            <Input
               label="Tax"
-              options={tax_option}
-              isinput={false}
-              handle={(values) => {
-                handleFieldChange("Tax", getTextForValue(tax_option, values));
-              }}
+              placeholder="Tax"
+              value={
+                formData.Product !== ""
+                  ? getProductTax(formData.Product, product_option)
+                  : ""
+              }
+              disabled
             />
           </div>
 
           <div className="mr-12">
             <Button
               onClick={() => setRows((pre) => [...pre, formData])}
-              disabled={formData.Client === "" || formData.Product === ""}
+              disabled={
+                formData.Client === "" ||
+                formData.Product === "" ||
+                formData.Qty === 0 ||
+                formData.Qty === "0"
+              }
             >
               +
             </Button>
@@ -816,9 +817,7 @@ export default function NewQuotationPage() {
                       handle={(values) => {
                         handleFieldChange(
                           "Shipping_Tax",
-                          getIntegerFromPercentageString(
-                            getTextForValue(tax_option, values),
-                          ),
+                          getIntegerFromPercentageString(values),
                         );
                       }}
                     />

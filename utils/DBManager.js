@@ -23,11 +23,12 @@ const { EmployeeLeaveDetails } = require("../models/EmployeeLeaveDetails");
 const {
   EmployeeAttendanceDetails,
 } = require("../models/EmployeeAttendanceDetails");
+const { ProductQuantities } = require("../models/ProductQuantities");
 
 const DBManager = new DataSource({
   name: "maindb",
   type: "sqlite",
-  database: "./db/main.sqlite",
+  database: "./db/test.sqlite",
   entities: [
     Address,
     Client,
@@ -51,6 +52,7 @@ const DBManager = new DataSource({
     Todo,
     EmployeeLeaveDetails,
     EmployeeAttendanceDetails,
+    ProductQuantities,
   ],
   synchronize: true,
 });

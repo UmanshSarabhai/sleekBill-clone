@@ -6591,3 +6591,13 @@ video {
   align-items: baseline;
   margin-bottom: 20px;
 }
+
+.hover-menu-list{
+  padding: 15px;
+  border-radius: 7px;
+}
+
+.hover-menu-list:hover{
+  background-color: #ffffffad;
+
+}

@@ -27,6 +27,7 @@ import Invoice from "../components/Invoice";
 import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
+import { useNavigate } from "react-router-dom";
 
 const TABLE_HEAD = [
   "No",
@@ -84,6 +85,8 @@ export default function ShowDebitNotePage() {
   useEffect(() => {
     document.title = "Debit Notes Report";
   });
+
+  const navigate = useNavigate();
 
   const [open, setOpen] = React.useState(false);
   const [modalData, setModalData] = useState(null);
@@ -185,8 +188,7 @@ export default function ShowDebitNotePage() {
       Type: obj.Transaction_type,
       ActionButton: (
         <>
-          {" "}
-          <Tooltip content="Pay">
+          {/* <Tooltip content="Pay">
             <Button
               size="xs"
               className="py-1 px-2"
@@ -211,7 +213,7 @@ export default function ShowDebitNotePage() {
                 />
               </svg>
             </Button>
-          </Tooltip>
+          </Tooltip> */}
           <Tooltip content="Edit">
             <Button
               size="xs"
@@ -376,8 +378,7 @@ export default function ShowDebitNotePage() {
           Type: obj.Transaction_type,
           ActionButton: (
             <>
-              {" "}
-              <Tooltip content="Pay">
+              {/* <Tooltip content="Pay">
                 <Button
                   size="xs"
                   className="py-1 px-2"
@@ -402,7 +403,7 @@ export default function ShowDebitNotePage() {
                     />
                   </svg>
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
               <Tooltip content="Edit">
                 <Button
                   size="xs"
@@ -742,7 +743,9 @@ export default function ShowDebitNotePage() {
           <Button onClick={exportInvoicesToExcel}>Export</Button>
         </div>
         <div className="mx-3">
-          <Button onClick={api_add_debit}>New Debit Note</Button>
+          <Button onClick={() => navigate("/sales/debit/new")}>
+            New Debit Note
+          </Button>
         </div>
       </div>
 

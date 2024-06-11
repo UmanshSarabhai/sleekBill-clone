@@ -65,7 +65,7 @@ export const tax_type = () => {
 };
 
 export const get_all_client_option = async () => {
-  let option = [{ text: "Add new Client", value: "*" }];
+  let option = [{ text: "Add New Client", value: "*" }];
   var res = await window.api.invoke("get-all-client");
   res?.data.map((c, idx) => {
     option.push({
@@ -78,8 +78,7 @@ export const get_all_client_option = async () => {
 
 export const get_all_product_option = async () => {
   var res = await window.api.invoke("get-all-product");
-  let product_option = [{ text: "Add New Product", value: "*" }];
-
+  let product_option = [{ text: "Add New Product" }];
   res?.data.map((c, idx) => {
     product_option.push({
       text: c.product_name,
@@ -88,6 +87,7 @@ export const get_all_product_option = async () => {
       uom: c.uom,
       description: c.description,
       purchase_price: c.purchase_price,
+      tax: c.tax,
     });
   });
   return product_option;
@@ -95,7 +95,7 @@ export const get_all_product_option = async () => {
 
 export const get_all_vendor_option = async () => {
   var res = await window.api.invoke("get-all-vendors");
-  let product_option = [{ text: "Add New Vendor", value: "Add New Vendor" }];
+  let product_option = [{ text: "Add New Vendor" }];
   res?.data.map((c, idx) => {
     product_option.push({
       text: c.Vendor,
@@ -173,4 +173,14 @@ export const get_invoice_count = async () => {
 export const get_todo_data = async () => {
   var res = await window.api.invoke("get-todo-data");
   return res;
+};
+
+export const get_product_quantities = async () => {
+  var res = await window.api.invoke("get-product-quantity");
+  return res;
+};
+
+export const get_all_employee_attendance = async () => {
+  var res = await window.api.invoke("get-attendance");
+  return res?.data;
 };

@@ -44,6 +44,7 @@ const payment_type = ["Received", "Made", "Advance Payment"];
 const payment_options = ["Cash", "Cheque", "Bank Transfer"];
 
 let client_option = await get_all_client_option();
+client_option.shift();
 let product_option = await get_all_product_option();
 let companyDetails = await get_company_details();
 let invoices = await get_all_invoices();

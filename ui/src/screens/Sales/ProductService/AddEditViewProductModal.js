@@ -10,6 +10,9 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import SelectComp from "../components/SelectComp";
+import { tax_type } from "../../../utils/SelectOptions";
+
+const taxes = tax_type();
 
 export function AddEditViewProductModal({
   isModalOpen,
@@ -28,7 +31,6 @@ export function AddEditViewProductModal({
   editId = "",
   isView = false,
   categoryId,
-  taxes,
 }) {
   const [showProductsModule, setShowProductsModule] = useState(true);
   const [showServiceModule, setShowServiceModule] = useState(false);
@@ -101,19 +103,6 @@ export function AddEditViewProductModal({
                 />
                 {renderErrorMessage("uom", "Unit is required is required.")}
               </div>
-              {showProductsModule && (
-                <Input
-                  variant="outlined"
-                  label="SKU"
-                  placeholder="SKU"
-                  value={data.sku}
-                  disabled={isView}
-                  onChange={(v) => {
-                    const skuValue = v.target.value;
-                    setData({ ...data, sku: skuValue });
-                  }}
-                />
-              )}
               <div className="mb-5">
                 <Input
                   variant="outlined"
@@ -132,7 +121,7 @@ export function AddEditViewProductModal({
                 />
                 {renderErrorMessage(
                   "product_name",
-                  "Product name is required.",
+                  "Product name is required."
                 )}
               </div>
               {showProductsModule && (
@@ -158,87 +147,7 @@ export function AddEditViewProductModal({
                   setData({ ...data, description: descValue });
                 }}
               />
-              {showServiceModule && (
-                <Input
-                  variant="outlined"
-                  label="SAC"
-                  placeholder="SAC"
-                  value={data.sac}
-                  disabled={isView}
-                  onChange={(v) => {
-                    const sacValue = v.target.value;
-                    setData({ ...data, sac: sacValue });
-                  }}
-                />
-              )}
-              {showProductsModule && (
-                <SelectComp
-                  label="Category"
-                  options={categories}
-                  isinput={false}
-                  defaultValue={data.category}
-                  disabled={isView}
-                  handle={(values) => {
-                    if (values === "*") {
-                      // api_new_client();
-                      return;
-                    }
-                    setCategoryId(values);
-                    setData({ ...data, category: values });
-                  }}
-                />
-              )}
-              {showProductsModule && (
-                <SelectComp
-                  label="Sub Category"
-                  isinput={false}
-                  options={subCategories}
-                  defaultValue={data.sub_category}
-                  disabled={isView}
-                  handle={(values) => {
-                    setData({ ...data, sub_category: values });
-                  }}
-                />
-              )}
-              {showProductsModule && (
-                <Input
-                  variant="outlined"
-                  label="Storage Location"
-                  placeholder="Storage Location"
-                  value={data.storage_location}
-                  disabled={isView}
-                  onChange={(v) => {
-                    const locationValue = v.target.value;
-                    setData({ ...data, storage_location: locationValue });
-                  }}
-                />
-              )}
-              {showProductsModule && (
-                <Input
-                  variant="outlined"
-                  label="Sub Location"
-                  placeholder="Sub Location"
-                  value={data.sub_location}
-                  disabled={isView}
-                  onChange={(v) => {
-                    const locationValue = v.target.value;
-                    setData({ ...data, sub_location: locationValue });
-                  }}
-                />
-              )}
-              {showProductsModule && (
-                <Input
-                  variant="outlined"
-                  label="HSN"
-                  placeholder="HSN"
-                  value={data.hns}
-                  disabled={isView}
-                  onChange={(v) => {
-                    const hnsValue = v.target.value;
-                    setData({ ...data, hns: hnsValue });
-                  }}
-                />
-              )}
+
               <Typography>Sales Information</Typography>
               <div className="mb-5">
                 <Input
@@ -263,7 +172,6 @@ export function AddEditViewProductModal({
                 label="Tax"
                 options={taxes}
                 isinput={false}
-                defaultValue={data.tax}
                 disabled={isView}
                 handle={(values) => {
                   setData({ ...data, tax: values });
@@ -271,23 +179,6 @@ export function AddEditViewProductModal({
               />
               {showProductsModule && (
                 <>
-                  <Input
-                    variant="outlined"
-                    label="Quantity"
-                    placeholder="Quantity"
-                    value={data.quantity}
-                    disabled={isView}
-                    onChange={(v) => {
-                      const qtyValue = v.target.value;
-                      const numericValue = qtyValue.replace(/[^0-9]/g, "");
-                      setData({ ...data, quantity: numericValue });
-                      setError((prevErrors) => ({
-                        ...prevErrors,
-                        quantity: !qtyValue.trim(),
-                      }));
-                    }}
-                  />
-                  {renderErrorMessage("quantity", "Quantity is required.")}
                   <Input
                     variant="outlined"
                     label="Opening Balance"
@@ -324,35 +215,6 @@ export function AddEditViewProductModal({
                       setData({ ...data, opening_rate: numericValue });
                     }}
                   />
-                  <div>
-                    <Input
-                      variant="outlined"
-                      label="CESS"
-                      placeholder="CESS"
-                      value={data.cessValue1}
-                      disabled={isView}
-                      onChange={(v) => {
-                        const cessValue = v.target.value;
-                        const numericValue = cessValue.replace(/[^0-9]/g, "");
-                        setData({ ...data, cessValue1: numericValue });
-                      }}
-                    />
-                    %
-                  </div>
-
-                  <div>
-                    +
-                    <Input
-                      variant="outlined"
-                      value={data.cessValue2}
-                      disabled={isView}
-                      onChange={(v) => {
-                        const cessValue = v.target.value;
-                        const numericValue = cessValue.replace(/[^0-9]/g, "");
-                        setData({ ...data, cessValue2: numericValue });
-                      }}
-                    />
-                  </div>
                 </>
               )}
               {showProductsModule && (
@@ -368,16 +230,6 @@ export function AddEditViewProductModal({
                       const priceValue = v.target.value;
                       const numericValue = priceValue.replace(/[^0-9]/g, "");
                       setData({ ...data, purchase_price: numericValue });
-                    }}
-                  />
-                  <SelectComp
-                    options={purchaseOptions}
-                    isinput={false}
-                    defaultValue={data.currency}
-                    disabled={isView}
-                    handle={(values) => {
-                      const value = values;
-                      setData({ ...data, currency: value });
                     }}
                   />
                 </>

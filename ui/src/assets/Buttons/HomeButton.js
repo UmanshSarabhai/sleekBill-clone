@@ -1,11 +1,12 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const HomeButton = () => {
+  const navigate = useNavigate();
   React.useEffect(() => {
     const handleKeyPress = (event) => {
       if (event.key === "Escape") {
-        window.location.href = "/dashboard";
+        navigate("/dashboard");
       }
     };
 

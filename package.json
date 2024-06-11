@@ -1,27 +1,49 @@
 {
   "name": "billingsystem",
   "version": "1.0.0",
-  "description": "",
+  "description": "A comprehensive billing software solution designed to streamline business operations by centralizing record management. This software facilitates invoicing, quotation generation, inventory management, purchase order tracking, and ledger maintenance. Additionally, it includes an integrated employee management system for efficient personnel administration.",
   "main": "main.js",
   "type": "commonjs",
   "scripts": {
-    "start": "electron .",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron-forge start",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "package": "electron-forge package",
+    "make": "electron-forge make"
   },
-  "author": "",
+  "author": "Umansh Sarabhai",
   "license": "ISC",
   "devDependencies": {
+    "@electron-forge/cli": "^7.4.0",
+    "@electron-forge/maker-deb": "^7.4.0",
+    "@electron-forge/maker-rpm": "^7.4.0",
+    "@electron-forge/maker-squirrel": "^7.4.0",
+    "@electron-forge/maker-zip": "^7.4.0",
+    "@electron-forge/plugin-auto-unpack-natives": "^7.4.0",
+    "@electron-forge/plugin-fuses": "^7.4.0",
+    "@electron/fuses": "^1.8.0",
     "@types/node": "^20.11.19",
     "electron": "^28.2.2",
     "electron-is-dev": "^3.0.1"
   },
   "dependencies": {
+    "chokidar": "^3.6.0",
     "electron-reload": "^2.0.0-alpha.1",
+    "electron-squirrel-startup": "^1.0.0",
     "exceljs": "^4.4.0",
     "file-saver": "^2.0.5",
     "reflect-metadata": "^0.2.1",
     "sqlite3": "^5.1.7",
     "typeorm": "^0.3.20",
     "xlsx": "^0.18.5"
+  },
+  "build": {
+    "appId": "GIT-RE-01",
+    "productName": "Umansh Billing Software",
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "target": "nsis"
+    }
   }
 }

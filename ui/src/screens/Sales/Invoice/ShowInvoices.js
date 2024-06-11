@@ -27,6 +27,7 @@ import Invoice from "../components/Invoice";
 import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
+import { useNavigate } from "react-router-dom";
 
 const TABLE_HEAD = [
   "No",
@@ -84,6 +85,8 @@ export default function ShowInvoicePage() {
     document.title = "Show Invoice";
   });
 
+  const navigate = useNavigate();
+
   const [open, setOpen] = React.useState(false);
   const [modalData, setModalData] = useState(null);
   const [formValues, setFormValues] = useState({
@@ -137,6 +140,10 @@ export default function ShowInvoicePage() {
     const res = await window.api.invoke("update-invoice", formValues);
   };
 
+  const handleNavigate = (data) => {
+    navigate("/sales/invoice/new", { state: { data } });
+  };
+
   let filteredArray = invoices.flat().map((obj) => {
     const dueDate = new Date(obj.Due_Date);
 
@@ -146,11 +153,8 @@ export default function ShowInvoicePage() {
       "Client Name": obj.Client,
       "Invoice No": obj.Document_No,
       "Issue Date": obj.Issue_Date,
-      "Due Date": (
-        <p style={{ color: dueDate <= today ? "red" : "inherit" }}>
-          {obj.Due_Date}
-        </p>
-      ),
+      "Due Date": obj.Due_Date,
+
       Amount: obj.Total_BeforeTax,
       Tax: obj.Total_Tax,
       "Shipping Cost": obj.Shipping_Charges,
@@ -181,8 +185,7 @@ export default function ShowInvoicePage() {
       Type: obj.Transaction_type,
       ActionButton: (
         <>
-          {" "}
-          <Tooltip content="Pay">
+          {/* <Tooltip content="Pay">
             <Button
               size="xs"
               className="py-1 px-2"
@@ -207,12 +210,13 @@ export default function ShowInvoicePage() {
                 />
               </svg>
             </Button>
-          </Tooltip>
+          </Tooltip> */}
           <Tooltip content="Edit">
             <Button
               size="xs"
               className="py-1 px-2"
               style={{ background: "none" }}
+              onClick={() => handleNavigate(obj)}
             >
               <svg
                 class="w-6 h-6 text-gray-800 dark:text-white"
@@ -371,8 +375,7 @@ export default function ShowInvoicePage() {
           Type: obj.Transaction_type,
           ActionButton: (
             <>
-              {" "}
-              <Tooltip content="Pay">
+              {/* <Tooltip content="Pay">
                 <Button
                   size="xs"
                   className="py-1 px-2"
@@ -397,7 +400,7 @@ export default function ShowInvoicePage() {
                     />
                   </svg>
                 </Button>
-              </Tooltip>
+              </Tooltip> */}
               <Tooltip content="Edit">
                 <Button
                   size="xs"
@@ -514,7 +517,6 @@ export default function ShowInvoicePage() {
       return rest;
     });
   }
-
   const exportInvoicesToExcel = async () => {
     try {
       const response = await window.api.invoke(
@@ -529,7 +531,6 @@ export default function ShowInvoicePage() {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         });
         saveAs(blob, "export_invoices.xlsx");
-        alert("yo");
       } else {
         console.error("Error:", response?.error);
       }
@@ -538,6 +539,7 @@ export default function ShowInvoicePage() {
       console.error("Export error:", error);
     }
   };
+
   const renderInvoicePreview = () => {
     if (isInvoicePreviewOpen) {
       return (
@@ -736,7 +738,9 @@ export default function ShowInvoicePage() {
           <Button onClick={exportInvoicesToExcel}>Export</Button>
         </div>
         <div className="mx-3">
-          <Button onClick={api_new_invoice}>New Invoice</Button>
+          <Button onClick={() => navigate("/sales/invoice/new")}>
+            New Invoice
+          </Button>
         </div>
       </div>
 
