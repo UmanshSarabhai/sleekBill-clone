@@ -7,6 +7,7 @@ import {
   Input,
   Button,
 } from "@material-tailwind/react";
+import { showmessage } from "../../../utils/api";
 
 export default function AddNewClientModal({ isOpen, handleOpen, handleClose }) {
   const [clientData, setClientData] = useState({
@@ -36,7 +37,7 @@ export default function AddNewClientModal({ isOpen, handleOpen, handleClose }) {
   const handleSave = async () => {
     // Save client data logic here
     const res = await window.api.invoke("add-new-client", clientData);
-    alert(res.message);
+    showmessage(res.message);
     handleClose();
   };
   const requiredFields = [

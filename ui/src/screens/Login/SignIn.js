@@ -23,10 +23,10 @@ function SignIn() {
       email: email,
       password: password,
     });
-    console.log(res);
+    //console.log(res);
     res.then((v) => {
       if (v) {
-        console.log(v);
+        //console.log(v);
         setCookie("user", v.companyid);
         window.location.href = "/dashboard";
       }

@@ -8,6 +8,7 @@ import {
   Typography,
 } from "@material-tailwind/react";
 import SelectComp from "../Sales/components/SelectComp";
+import { showmessage } from "../../utils/api";
 
 const option1 = [
   {
@@ -51,18 +52,18 @@ function AddCompanyDetails() {
   };
   const handle_select = (values) => {
     company_detail[values.select] = values.input;
-    console.log(values);
+    //console.log(values);
   };
   const proceed = () => {
-    console.log(company_detail);
+    //console.log(company_detail);
     var res = window.api.invoke("add-new-company", company_detail);
     res.then((v) => {
-      console.log(v);
+      //console.log(v);
       if (v == "ok") {
-        alert("Signup Done");
+        showmessage("Signup Done");
         window.location.href = "/signin";
       } else {
-        alert("Unexpected Error");
+        showmessage("Unexpected Error");
       }
     });
   };

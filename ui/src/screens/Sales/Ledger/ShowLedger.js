@@ -149,39 +149,6 @@ export default function ShowLedgerPage() {
     setPaymentRows(rowData);
   }, [filterValues.Client]);
 
-  //   useEffect(() => {
-  //     let rowData = mergedArray.filter((object) => {
-  //         // Check if the client matches the filter value
-  //         if (filterValues.Client && object.Client !== filterValues.Client) {
-  //             return false;
-  //         }
-
-  //         // Check if the document number matches the filter value
-  //         if (filterValues.Document_No && object["Document No"] !== filterValues.Document_No) {
-  //             return false;
-  //         }
-
-  //         // Check if the date is within the range
-  //         if (filterValues.Issue_From && filterValues.Issue_To) {
-  //             const fromDate = new Date(filterValues.Issue_From);
-  //             const toDate = new Date(filterValues.Issue_To);
-  //             const itemDate = new Date(object.Date);
-  //             return itemDate >= fromDate && itemDate <= toDate;
-  //         }
-
-  //     }).map((item) => {
-  //         return {
-  //             Client: item.Client,
-  //             "Document No": item["Document No"],
-  //             Date: item.Date,
-  //             Type: item.Type,
-  //             "Credit (+)": item["Credit (+)"],
-  //             "Debit (-)": item["Debit (-)"],
-  //         };
-  //     });
-  //     setPaymentRows(rowData);
-  // }, [filterValues]);
-
   function calculateSum(data) {
     let creditSum = 0;
     let debitSum = 0;
@@ -242,122 +209,122 @@ export default function ShowLedgerPage() {
     });
   }
 
-  // const exportInvoicesToExcel = async () => {
-  //   try {
-  //     const response = await ipcRenderer.invoke(
-  //       "export-invoices-to-excel",
-  //       nonEmptyFields.length === 0
-  //         ? removeStatusField(filteredArray)
-  //         : removeStatusField(filterData)
-  //     );
-  //     if (response?.success) {
-  //       const buffer = response.buffer;
-  //       const blob = new Blob([buffer], {
-  //         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  //       });
-  //       saveAs(blob, "export_invoices.xlsx");
-  //     } else {
-  //       console.error("Error:", response?.error);
-  //     }
-  //     console.log("Export response:", response);
-  //   } catch (error) {
-  //     console.error("Export error:", error);
-  //   }
-  // };
-  // const renderInvoicePreview = () => {
-  //   if (isInvoicePreviewOpen) {
-  //     return (
-  //       <div
-  //         style={{
-  //           position: "fixed",
-  //           top: 0,
-  //           left: 0,
-  //           width: "100%",
-  //           height: "100%",
-  //           backgroundColor: "rgba(0, 0, 0, 0.5)" /* Semi-transparent black */,
-  //           backdropFilter:
-  //             "blur(5px)" /* Apply blur effect to the background */,
-  //           zIndex: 999 /* Ensure the backdrop is above other content */,
-  //           display: "flex",
-  //           justifyContent: "center",
-  //           alignItems: "center",
-  //         }}
-  //       >
-  //         <div
-  //           style={{
-  //             position: "relative",
-  //             width: "80%",
-  //             maxWidth: "800px" /* Set maximum width for the container */,
-  //             backgroundColor: "white",
-  //             borderRadius: "8px",
-  //             boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)",
-  //             padding: "20px",
-  //           }}
-  //         >
-  //           <div style={{ textAlign: "right", marginBottom: "10px" }}>
-  //             <button
-  //               style={{
-  //                 background: "orangered",
-  //                 border: "1px solid",
-  //                 cursor: "pointer",
-  //                 padding: "5px",
-  //                 borderRadius: "5px",
-  //                 marginLeft: 10,
-  //               }}
-  //               onClick={closeInvoicePreviewWindow}
-  //             >
-  //               <svg
-  //                 xmlns="http://www.w3.org/2000/svg"
-  //                 width="24"
-  //                 height="24"
-  //                 viewBox="0 0 24 24"
-  //                 fill="none"
-  //                 stroke="currentColor"
-  //                 strokeWidth="2"
-  //                 strokeLinecap="round"
-  //                 strokeLinejoin="round"
-  //               >
-  //                 <line x1="18" y1="6" x2="6" y2="18" />
-  //                 <line x1="6" y1="6" x2="18" y2="18" />
-  //               </svg>
-  //             </button>
-  //           </div>
-  //           <PDFViewer
-  //             style={{
-  //               width: "100%",
-  //               height: "90vh" /* Adjusted height */,
-  //             }}
-  //           >
-  //             <Invoice
-  //               data={selectedRow.rowData.flat()}
-  //               details={{
-  //                 Client: selectedRow.Client,
-  //                 Issue_Date: selectedRow.Issue_Date,
-  //                 Document_No: selectedRow.Document_No,
-  //                 Ship_To: selectedRow.Ship_To,
-  //                 PO_Number: selectedRow.PO_Number,
-  //                 PO_Date: selectedRow.PO_Date,
-  //                 Due_Date: selectedRow.Due_Date,
-  //                 Payment_Term: selectedRow.Payment_Term,
-  //                 Place_Of_Supply: selectedRow.Place_Of_Supply,
-  //                 Notes: selectedRow.Notes,
-  //                 Shipping_Charges: Number(selectedRow.Shipping_Charges),
-  //                 Shipping_Tax: selectedRow.Shipping_Tax || 0,
-  //                 Discount_on_all: selectedRow.Discount_on_all,
-  //                 Total_BeforeTax: selectedRow.Total_BeforeTax,
-  //                 Total_Tax: selectedRow.Total_Tax,
-  //                 Type: "INVOICE",
-  //                 companyDetails: companyDetails.data[0],
-  //               }}
-  //             />
-  //           </PDFViewer>
-  //         </div>
-  //       </div>
-  //     );
-  //   } else {
-  //     return null;
-  //   }
-  // };
+  const exportInvoicesToExcel = async () => {
+    try {
+      const response = await window.api.invoke(
+        "export-ledger-to-excel",
+        nonEmptyFields.length === 0
+          ? paymentRows.filter((x) => x.Date !== "")
+          : paymentRows.filter((x) => x.Date !== ""),
+      );
+      if (response?.success) {
+        const buffer = response.buffer;
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        saveAs(blob, "export_ledger.xlsx");
+      } else {
+        //console.error("Error:", response?.error);
+      }
+      //console.log("Export response:", response);
+    } catch (error) {
+      //console.error("Export error:", error);
+    }
+  };
+  const renderInvoicePreview = () => {
+    if (isInvoicePreviewOpen) {
+      return (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)" /* Semi-transparent black */,
+            backdropFilter:
+              "blur(5px)" /* Apply blur effect to the background */,
+            zIndex: 999 /* Ensure the backdrop is above other content */,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <div
+            style={{
+              position: "relative",
+              width: "80%",
+              maxWidth: "800px" /* Set maximum width for the container */,
+              backgroundColor: "white",
+              borderRadius: "8px",
+              boxShadow: "0 0 10px rgba(0, 0, 0, 0.3)",
+              padding: "20px",
+            }}
+          >
+            <div style={{ textAlign: "right", marginBottom: "10px" }}>
+              <button
+                style={{
+                  background: "orangered",
+                  border: "1px solid",
+                  cursor: "pointer",
+                  padding: "5px",
+                  borderRadius: "5px",
+                  marginLeft: 10,
+                }}
+                onClick={closeInvoicePreviewWindow}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              </button>
+            </div>
+            <PDFViewer
+              style={{
+                width: "100%",
+                height: "90vh" /* Adjusted height */,
+              }}
+            >
+              <Invoice
+                data={selectedRow.rowData.flat()}
+                details={{
+                  Client: selectedRow.Client,
+                  Issue_Date: selectedRow.Issue_Date,
+                  Document_No: selectedRow.Document_No,
+                  Ship_To: selectedRow.Ship_To,
+                  PO_Number: selectedRow.PO_Number,
+                  PO_Date: selectedRow.PO_Date,
+                  Due_Date: selectedRow.Due_Date,
+                  Payment_Term: selectedRow.Payment_Term,
+                  Place_Of_Supply: selectedRow.Place_Of_Supply,
+                  Notes: selectedRow.Notes,
+                  Shipping_Charges: Number(selectedRow.Shipping_Charges),
+                  Shipping_Tax: selectedRow.Shipping_Tax || 0,
+                  Discount_on_all: selectedRow.Discount_on_all,
+                  Total_BeforeTax: selectedRow.Total_BeforeTax,
+                  Total_Tax: selectedRow.Total_Tax,
+                  Type: "INVOICE",
+                  companyDetails: companyDetails.data[0],
+                }}
+              />
+            </PDFViewer>
+          </div>
+        </div>
+      );
+    } else {
+      return null;
+    }
+  };
 
   return (
     <div className="flex flex-col w-full h-full px-5">
@@ -426,11 +393,7 @@ export default function ShowLedgerPage() {
       <hr />
       <div className="flex my-2 flex-row-reverse">
         <div className="mx-3">
-          <Button
-          // onClick={exportInvoicesToExcel}
-          >
-            Export
-          </Button>
+          <Button onClick={exportInvoicesToExcel}>Export</Button>
         </div>
       </div>
       <div

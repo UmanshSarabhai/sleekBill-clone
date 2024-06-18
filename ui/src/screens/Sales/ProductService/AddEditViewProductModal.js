@@ -121,7 +121,7 @@ export function AddEditViewProductModal({
                 />
                 {renderErrorMessage(
                   "product_name",
-                  "Product name is required."
+                  "Product name is required.",
                 )}
               </div>
               {showProductsModule && (

@@ -122,315 +122,328 @@ const Invoice = ({ data, details }) => {
     <>
       <Document>
         <Page size="A4" style={styles.page}>
-          <View style={styles.header_container}>
-            {/* Logo on the top left corner */}
-            <View style={styles.logo_container}>
-              {/* Insert your company logo here */}
-              <Text>Company Logo</Text>
+          <View style={styles.pageContent}>
+            <View style={styles.header_container}>
+              {/* Logo on the top left corner */}
+              <View style={styles.logo_container}>
+                {/* Insert your company logo here */}
+                <Text>Company Logo</Text>
+              </View>
+
+              {/* Company details on the top right corner */}
+              <View style={styles.company_details}>
+                <Text style={styles.company_name}>
+                  {details.companyDetails.companyName}
+                </Text>
+                <Text style={styles.detail_text}>
+                  {details.companyDetails.address}
+                </Text>
+                <Text style={styles.detail_text}>
+                  {details.companyDetails.city} {details.companyDetails.pincode}
+                </Text>
+                <Text style={styles.detail_text}>
+                  {details.companyDetails.email}
+                </Text>
+                <Text style={styles.detail_text}>
+                  {details.companyDetails.phone}
+                </Text>
+              </View>
             </View>
 
-            {/* Company details on the top right corner */}
-            <View style={styles.company_details}>
-              <Text style={styles.company_name}>
-                {details.companyDetails.companyName}
-              </Text>
-              <Text style={styles.detail_text}>
-                {details.companyDetails.address}, {details.companyDetails.city}{" "}
-                {details.companyDetails.pincode}
-              </Text>
-              <Text style={styles.detail_text}>
-                {details.companyDetails.email}
-              </Text>
-              <Text style={styles.detail_text}>
-                {details.companyDetails.phone}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.invoice_title_container}>
-            <View style={styles.line}></View>
-            <Text style={styles.invoice_title}>{details.Type}</Text>
-            <View style={styles.line}></View>
-          </View>
-
-          <View style={styles.bill_ship_container}>
-            {/* Bill To section on the left */}
-            <View style={styles.bill_to}>
-              <Text style={styles.sub_header}>Bill To:</Text>
-              {/* Your bill to details here */}
-              <Text style={styles.detail_text}>{details.Ship_To}</Text>
-              <Text style={styles.detail_text}>{details.Place_Of_Supply}</Text>
+            <View style={styles.invoice_title_container}>
+              <View style={styles.line}></View>
+              <Text style={styles.invoice_title}>{details.Type}</Text>
+              <View style={styles.line}></View>
             </View>
 
-            {/* Ship To section on the right */}
-            <View style={styles.ship_to}>
-              <Text style={styles.sub_header}>Ship To:</Text>
-              {/* Your ship to details here */}
-              <Text style={styles.detail_text}>{details.Ship_To}</Text>
-              <Text style={styles.detail_text}>{details.Place_Of_Supply}</Text>
-            </View>
-          </View>
+            <View style={styles.bill_ship_container}>
+              {/* Bill To section on the left */}
+              <View style={styles.bill_to}>
+                <Text style={styles.sub_header}>Bill To: {details.Client}</Text>
+                <Text style={styles.detail_text}>{details.Ship_To}</Text>
+                <Text style={styles.detail_text}>
+                  {details.Place_Of_Supply}
+                </Text>
+              </View>
 
-          {/* Table with Invoice Date, Terms, and Due Date */}
-          <View style={styles.invoice_details_container}>
-            <View style={styles.table_row}>
-              <Text
-                style={[
-                  styles.tableCell,
-                  styles.whiteBg,
-                  { width: "33%" }, // Adjusted width for the fourth column
-                ]}
-              >
-                Invoice Date
-              </Text>
-              <Text
-                style={[
-                  styles.tableCell,
-                  styles.lightGreyBg,
-                  { width: "33%" }, // Adjusted width for the fourth column
-                ]}
-              >
-                Payment Terms
-              </Text>
-              <Text
-                style={[
-                  styles.tableCell,
-                  styles.whiteBg,
-                  { width: "33%" }, // Adjusted width for the fourth column
-                ]}
-              >
-                Due Date
-              </Text>
+              {/* Ship To section on the right */}
+              <View style={styles.ship_to}>
+                <Text style={styles.sub_header}>Ship To: {details.Client}</Text>
+                <Text style={styles.detail_text}>{details.Ship_To}</Text>
+                <Text style={styles.detail_text}>
+                  {details.Place_Of_Supply}
+                </Text>
+              </View>
             </View>
-            <View style={styles.table_row}>
-              <Text
-                style={[
-                  styles.tableCell,
-                  styles.whiteBg,
-                  { width: "33%" }, // Adjusted width for the fourth column
-                ]}
-              >
-                {formatDate(details.Issue_Date)}
-              </Text>
-              <Text
-                style={[
-                  styles.tableCell,
-                  styles.lightGreyBg,
-                  { width: "33%" }, // Adjusted width for the fourth column
-                ]}
-              >
-                {details.Payment_Term}
-              </Text>
-              <Text
-                style={[
-                  styles.tableCell,
-                  styles.whiteBg,
-                  { width: "33%" }, // Adjusted width for the fourth column
-                ]}
-              >
-                {formatDate(details.Due_Date)}
-              </Text>
-            </View>
-          </View>
 
-          {/* Invoice Table */}
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text
-                style={[
-                  styles.tableHeader,
-                  styles.whiteBg,
-                  { flexBasis: "5%" }, // Adjusted width
-                ]}
-              >
-                S.No
-              </Text>
-              <Text
-                style={[
-                  styles.tableHeader,
-                  styles.lightGreyBg,
-                  { flexBasis: "19%" }, // Adjusted width
-                ]}
-              >
-                Product
-              </Text>
-              <Text
-                style={[
-                  styles.tableHeader,
-                  styles.whiteBg,
-                  { flexBasis: "19%" }, // Adjusted width
-                ]}
-              >
-                HSN/SAC
-              </Text>
-              <Text
-                style={[
-                  styles.tableHeader,
-                  styles.lightGreyBg,
-                  { flexBasis: "13%" }, // Adjusted width
-                ]}
-              >
-                Qty
-              </Text>
-              <Text
-                style={[
-                  styles.tableHeader,
-                  styles.whiteBg,
-                  { flexBasis: "19%" }, // Adjusted width
-                ]}
-              >
-                Unit Price
-              </Text>
-              <Text
-                style={[
-                  styles.tableHeader,
-                  styles.lightGreyBg,
-                  { flexBasis: "25%" }, // Adjusted width
-                ]}
-              >
-                Amount
-              </Text>
-            </View>
-            {data.map((item, index) => (
-              <View key={index} style={styles.tableRow}>
+            {/* Table with Invoice Date, Terms, and Due Date */}
+            <View style={styles.invoice_details_container}>
+              <View style={styles.table_row}>
                 <Text
                   style={[
                     styles.tableCell,
-                    index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
-                    { width: "5%" }, // Adjusted width for the first column
+                    styles.whiteBg,
+                    { width: "33%" }, // Adjusted width for the fourth column
                   ]}
                 >
-                  {index + 1}
+                  Invoice Date
                 </Text>
                 <Text
                   style={[
                     styles.tableCell,
-                    index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
-                    { width: "19%" }, // Adjusted width for the second column
+                    styles.lightGreyBg,
+                    { width: "33%" }, // Adjusted width for the fourth column
                   ]}
                 >
-                  {item.Product}
+                  Payment Terms
                 </Text>
                 <Text
                   style={[
                     styles.tableCell,
-                    index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
-                    { width: "19%" }, // Adjusted width for the third column
+                    styles.whiteBg,
+                    { width: "33%" }, // Adjusted width for the fourth column
                   ]}
                 >
-                  {item.HSNSAC}
+                  Due Date
+                </Text>
+              </View>
+              <View style={styles.table_row}>
+                <Text
+                  style={[
+                    styles.tableCell,
+                    styles.whiteBg,
+                    { width: "33%" }, // Adjusted width for the fourth column
+                  ]}
+                >
+                  {formatDate(details.Issue_Date)}
                 </Text>
                 <Text
                   style={[
                     styles.tableCell,
-                    index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
-                    { width: "13%" }, // Adjusted width for the fourth column
+                    styles.lightGreyBg,
+                    { width: "33%" }, // Adjusted width for the fourth column
                   ]}
                 >
-                  {item.Qty}
+                  {details.Payment_Term}
                 </Text>
                 <Text
                   style={[
                     styles.tableCell,
-                    index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
-                    { width: "19%" }, // Adjusted width for the fifth column
+                    styles.whiteBg,
+                    { width: "33%" }, // Adjusted width for the fourth column
                   ]}
                 >
-                  {item.UnitPrice}
-                  {item.Discount !== "0%" && (
-                    <>
-                      {"\n"}
-                      <Text style={styles.discountText}>
-                        Discount-{item.Discount}
-                      </Text>
-                    </>
-                  )}
+                  {formatDate(details.Due_Date)}
+                </Text>
+              </View>
+            </View>
+
+            {/* Invoice Table */}
+            <View style={styles.table}>
+              <View style={styles.tableRow}>
+                <Text
+                  style={[
+                    styles.tableHeader,
+                    styles.whiteBg,
+                    { flexBasis: "7%" }, // Adjusted width
+                  ]}
+                >
+                  S.No
                 </Text>
                 <Text
                   style={[
-                    styles.tableCell,
-                    index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
-                    { width: "25%" }, // Adjusted width for the sixth column
+                    styles.tableHeader,
+                    styles.lightGreyBg,
+                    { flexBasis: "19%" }, // Adjusted width
                   ]}
                 >
+                  Product
+                </Text>
+                <Text
+                  style={[
+                    styles.tableHeader,
+                    styles.whiteBg,
+                    { flexBasis: "19%" }, // Adjusted width
+                  ]}
+                >
+                  HSN/SAC
+                </Text>
+                <Text
+                  style={[
+                    styles.tableHeader,
+                    styles.lightGreyBg,
+                    { flexBasis: "13%" }, // Adjusted width
+                  ]}
+                >
+                  Qty
+                </Text>
+                <Text
+                  style={[
+                    styles.tableHeader,
+                    styles.whiteBg,
+                    { flexBasis: "19%" }, // Adjusted width
+                  ]}
+                >
+                  Unit Price
+                </Text>
+                <Text
+                  style={[
+                    styles.tableHeader,
+                    styles.lightGreyBg,
+                    { flexBasis: "25%" }, // Adjusted width
+                  ]}
+                >
+                  Amount
+                </Text>
+              </View>
+              {data.map((item, index) => (
+                <View key={index} style={styles.tableRow}>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
+                      { width: "5%" }, // Adjusted width for the first column
+                    ]}
+                  >
+                    {index + 1}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
+                      { width: "19%" }, // Adjusted width for the second column
+                    ]}
+                  >
+                    {item.Product}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
+                      { width: "19%" }, // Adjusted width for the third column
+                    ]}
+                  >
+                    {item.HSNSAC}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
+                      { width: "13%" }, // Adjusted width for the fourth column
+                    ]}
+                  >
+                    {item.Qty}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
+                      { width: "19%" }, // Adjusted width for the fifth column
+                    ]}
+                  >
+                    {item.UnitPrice}
+                    {item.Discount !== "0%" && (
+                      <>
+                        {"\n"}
+                        <Text style={styles.discountText}>
+                          Discount-{item.Discount}
+                        </Text>
+                      </>
+                    )}
+                  </Text>
+                  <Text
+                    style={[
+                      styles.tableCell,
+                      index % 2 === 0 ? styles.whiteBg : styles.lightGreyBg,
+                      { width: "25%" }, // Adjusted width for the sixth column
+                    ]}
+                  >
+                    {(
+                      item.UnitPrice *
+                      item.Qty *
+                      (1 - parseFloat(item.Discount) / 100)
+                    ).toFixed(2)}
+                  </Text>
+                </View>
+              ))}
+            </View>
+
+            {/* Total Amount */}
+            <View style={styles.totalAmount}>
+              <View style={styles.row}>
+                <Text style={styles.totalText}>Total Before Tax:</Text>
+                <Text style={styles.totalValue}>{details.Total_BeforeTax}</Text>
+              </View>
+              <View style={styles.row}>
+                <Text style={styles.totalText}>Total Tax:</Text>
+                <Text style={styles.totalValue}>{details.Total_Tax}</Text>
+              </View>
+              {details.Shipping_Charges > 0 ? (
+                <View style={styles.row}>
+                  <Text style={styles.totalText}>Shipping Charges:</Text>
+                  <Text style={styles.totalValue}>
+                    {details.Shipping_Charges}
+                  </Text>
+                </View>
+              ) : (
+                <></>
+              )}
+              <View style={styles.row}>
+                <Text style={styles.totalText}>Total Amount:</Text>
+                <Text style={styles.totalValue}>
                   {(
-                    item.UnitPrice *
-                    item.Qty *
-                    (1 - parseFloat(item.Discount) / 100)
+                    Number(details.Total_BeforeTax) +
+                    Number(details.Total_Tax) +
+                    Number(details.Shipping_Charges)
                   ).toFixed(2)}
                 </Text>
               </View>
-            ))}
-          </View>
+            </View>
 
-          {/* Total Amount */}
-          <View style={styles.totalAmount}>
-            <View style={styles.row}>
-              <Text style={styles.totalText}>Total Before Tax:</Text>
-              <Text style={styles.totalValue}>{details.Total_BeforeTax}</Text>
+            {/* Total Amount in Words */}
+            <View style={styles.totalAmountInWords}>
+              <Text style={styles.totalTextDuplicate}>
+                Total Amount in Words:
+              </Text>
+              <Text style={styles.totalAmountText}>
+                {convertAmountToWords(
+                  parseInt(
+                    Number(details.Total_BeforeTax) +
+                      Number(details.Total_Tax) +
+                      Number(details.Shipping_Charges),
+                  ),
+                )}
+              </Text>
             </View>
-            <View style={styles.row}>
-              <Text style={styles.totalText}>Total Tax:</Text>
-              <Text style={styles.totalValue}>{details.Total_Tax}</Text>
-            </View>
-            {details.Shipping_Charges > 0 ? (
-              <View style={styles.row}>
-                <Text style={styles.totalText}>Shipping Charges:</Text>
-                <Text style={styles.totalValue}>
-                  {details.Shipping_Charges}
-                </Text>
+
+            {/* Footer */}
+            {details.Notes.length > 0 ? (
+              <View style={styles.totalAmountInWords}>
+                <Text style={styles.totalText}>Note:{details.Notes}</Text>
               </View>
             ) : (
               <></>
             )}
-            <View style={styles.row}>
-              <Text style={styles.totalText}>Total Amount:</Text>
-              <Text style={styles.totalValue}>
-                {(
-                  Number(details.Total_BeforeTax) +
-                  Number(details.Total_Tax) +
-                  Number(details.Shipping_Charges)
-                ).toFixed(2)}
-              </Text>
+            <View style={styles.footer}>
+              <Text>Thank you for your business!</Text>
             </View>
-          </View>
-
-          {/* Total Amount in Words */}
-          <View style={styles.totalAmountInWords}>
-            <Text style={styles.totalTextDuplicate}>
-              Total Amount in Words:
-            </Text>
-            <Text style={styles.totalAmountText}>
-              {convertAmountToWords(
-                parseInt(
-                  Number(details.Total_BeforeTax) +
-                    Number(details.Total_Tax) +
-                    Number(details.Shipping_Charges),
-                ),
-              )}
-            </Text>
-          </View>
-
-          {/* Footer */}
-          {details.Notes.length > 0 ? (
-            <View style={styles.totalAmountInWords}>
-              <Text style={styles.totalText}>Note:{details.Notes}</Text>
-            </View>
-          ) : (
-            <></>
-          )}
-          <View style={styles.footer}>
-            <Text>Thank you for your business!</Text>
           </View>
         </Page>
       </Document>
     </>
   );
 };
+
 const styles = StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
     padding: 10, // Adjusted padding
+  },
+  pageContent: {
+    borderWidth: 1,
+    borderColor: "#000",
+    padding: 10,
+    height: "98%",
   },
   logoContainer: {
     position: "absolute",
@@ -452,7 +465,7 @@ const styles = StyleSheet.create({
     marginBottom: 15, // Adjusted margin
   },
   detailText: {
-    fontSize: 10, // Decreased font size
+    fontSize: 12, // Decreased font size
     marginBottom: 5, // Adjusted margin
   },
   invoice_title_container: {
@@ -481,7 +494,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
   },
   tableHeader: {
-    fontSize: 10, // Decreased font size
+    fontSize: 12, // Decreased font size
     padding: 5,
     border: "none",
     textAlign: "center",
@@ -515,19 +528,20 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   totalText: {
-    fontSize: 10,
+    fontSize: 12,
     marginRight: 10,
   },
   totalTextDuplicate: {
-    fontSize: 10,
-    width: 150, // Fixed width for the text containing labels
+    fontSize: 12,
+    width: 120,
     marginRight: 5,
   },
   totalAmountText: {
-    fontSize: 10,
+    fontSize: 12,
+    fontWeight: "800",
   },
   totalValue: {
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: "bold",
     width: 40, // Fixed width for the text containing values
     textAlign: "right", // Align text to the right
@@ -549,9 +563,12 @@ const styles = StyleSheet.create({
   },
   logo_container: {
     // Your logo container styles
+    maxWidth: "40%",
   },
   company_details: {
     // Your company details styles
+    overflow: "auto",
+    maxWidth: "50%",
   },
   invoice_title_container: {
     flexDirection: "row",
@@ -574,10 +591,12 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   bill_to: {
-    // Your bill to styles
+    maxWidth: "40%",
+    overflow: "auto",
   },
   ship_to: {
-    // Your ship to styles
+    maxWidth: "40%",
+    overflow: "auto",
   },
   invoice_details_container: {
     marginBottom: 20,
@@ -611,6 +630,7 @@ const styles = StyleSheet.create({
   detail_text: {
     fontSize: 12, // Reduced font size for other details
     marginBottom: 3, // Reduced margin below each detail
+    overflow: "",
   },
   buttonContainer: {
     position: "absolute",

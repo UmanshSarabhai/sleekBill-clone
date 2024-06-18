@@ -28,6 +28,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
 import { useNavigate } from "react-router-dom";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -269,7 +270,8 @@ export default function ShowCreditNotePage() {
             <Button
               color="white"
               size="xs" // Adjusted button size to xs
-              onClick={() => console.log(obj)}
+              onClick={() => {//console.log(obj)
+              }}
               className="py-1 px-2" // Adjusted padding
             >
               <svg
@@ -501,7 +503,7 @@ export default function ShowCreditNotePage() {
       "delete-credit-note-by-Document-no",
       obj.Document_No,
     );
-    alert(res.message);
+    showmessage(res.message);
   };
   const AmountPaidHandler = async (e, doc_no) => {
     handleInputChange("Amount_Paid", e.target.value);
@@ -522,31 +524,6 @@ export default function ShowCreditNotePage() {
     });
   }
 
-  const exportInvoicesToExcel = async () => {
-    console.log(removeStatusField(filteredArray));
-    console.log(removeStatusField(filterData));
-
-    try {
-      const response = await window.api.invoke(
-        "export-credit-to-excel",
-        nonEmptyFields.length === 0
-          ? removeStatusField(filteredArray)
-          : removeStatusField(filterData),
-      );
-      if (response?.success) {
-        const buffer = response.buffer;
-        const blob = new Blob([buffer], {
-          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        });
-        saveAs(blob, "export_creditNotes.xlsx");
-      } else {
-        console.error("Error:", response?.error);
-      }
-      console.log("Export response:", response);
-    } catch (error) {
-      console.error("Export error:", error);
-    }
-  };
   const renderInvoicePreview = () => {
     if (isInvoicePreviewOpen) {
       return (
@@ -738,9 +715,6 @@ export default function ShowCreditNotePage() {
       </div>
       <hr />
       <div className="flex my-2 flex-row-reverse">
-        <div className="mx-3">
-          <Button onClick={exportInvoicesToExcel}>Export</Button>
-        </div>
         <div className="mx-3">
           <Button onClick={() => navigate("/sales/credit/new")}>
             New Credit Note

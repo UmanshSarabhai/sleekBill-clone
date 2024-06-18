@@ -62,13 +62,15 @@ function convertDropdownData(data) {
 
 const adjustedData = adjustQuantities(purchaseOrders.flat(), invoices.flat());
 
-console.log(adjustedData);
+//console.log(adjustedData);
 
 export default function Inventory() {
   useEffect(() => {
     document.title = "Inventory";
   });
+
   const combinedArray = [...invoices.flat(), ...purchaseOrders.flat()];
+
   function getProductQtyByDocument(data, product) {
     const result = [];
 
@@ -241,6 +243,40 @@ export default function Inventory() {
       [fieldName]: value,
     }));
   };
+
+  function removeStatusField(objectsArray) {
+    // Iterate through each object in the array
+    return objectsArray.map((obj) => {
+      // Destructure the object to remove the "Status" field
+      const { ActionButton, ...rest } = obj;
+      // Return the object without the "Status" field
+      return rest;
+    });
+  }
+
+  const exportInventory = async () => {
+    try {
+      const response = await window.api.invoke(
+        "export-inventory-report-to-excel",
+        nonEmptyFields.length === 0
+          ? removeStatusField(unfilteredData)
+          : removeStatusField(filterData),
+      );
+      if (response?.success) {
+        const buffer = response.buffer;
+        const blob = new Blob([buffer], {
+          type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        });
+        saveAs(blob, `inventory_report_${new Date()}.xlsx`);
+      } else {
+        //console.error("Error:", response?.error);
+      }
+      //console.log("Export response:", response);
+    } catch (error) {
+      //console.error("Export error:", error);
+    }
+  };
+
   const resetFilterValues = () => {
     window.location.reload();
   };
@@ -294,7 +330,7 @@ export default function Inventory() {
       <hr />
       <div className="flex my-2 flex-row-reverse">
         <div className="mx-3">
-          <Button>Export</Button>
+          <Button onClick={() => exportInventory()}>Export</Button>
         </div>
       </div>
 

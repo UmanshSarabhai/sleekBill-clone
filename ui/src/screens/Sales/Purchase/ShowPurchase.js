@@ -355,7 +355,7 @@ export default function ShowInvoicePage() {
     // Iterate through each object in the array
     return objectsArray.map((obj) => {
       // Destructure the object to remove the "Status" field
-      const { Status, ActionButton, ...rest } = obj;
+      const { Type, ActionButton, ...rest } = obj;
       // Return the object without the "Status" field
       return rest;
     });
@@ -364,7 +364,7 @@ export default function ShowInvoicePage() {
   const exportInvoicesToExcel = async () => {
     try {
       const response = await window.api.invoke(
-        "export-invoices-to-excel",
+        "export-purchase-to-excel",
         nonEmptyFields.length === 0
           ? removeStatusField(filteredArray)
           : removeStatusField(filterData),
@@ -374,14 +374,13 @@ export default function ShowInvoicePage() {
         const blob = new Blob([buffer], {
           type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         });
-        saveAs(blob, "export_invoices.xlsx");
-        alert("yo");
+        saveAs(blob, "export_purchase.xlsx");
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
-      console.log("Export response:", response);
+      //console.log("Export response:", response);
     } catch (error) {
-      console.error("Export error:", error);
+      //console.error("Export error:", error);
     }
   };
   const renderInvoicePreview = () => {

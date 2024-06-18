@@ -20,6 +20,7 @@ import {
 } from "../utils/SelectOptions";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import adjustQuantities from "./Sales/Inventory/InventoryLogic";
+import { showmessage } from "../utils/api";
 
 let invoices = await get_all_invoices();
 let purchaseOrders = await get_all_purchase_orders();
@@ -32,7 +33,6 @@ const current_stock = adjustedData.map((x) => {
     Quantity: x.Quantity,
   };
 });
-
 
 const Icon = ({ id, open }) => (
   <svg
@@ -261,7 +261,7 @@ export default function HomePage() {
 
   const handleSave = async () => {
     const res = await window.api.invoke("save-todo", text);
-    alert(res.message);
+    showmessage(res.message);
   };
 
   return (
