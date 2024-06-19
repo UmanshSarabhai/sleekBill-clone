@@ -3,14 +3,10 @@ const { EntitySchema } = require("typeorm");
 const ProductQuantities = new EntitySchema({
   name: "product_quantities",
   columns: {
-    id: {
-      type: Number,
-      primary: true,
-      generated: true,
-    },
     Product: {
       type: String,
       nullable: false,
+      primary: true,
     },
     Quantity: {
       type: Number,

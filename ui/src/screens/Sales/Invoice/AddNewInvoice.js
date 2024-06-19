@@ -29,7 +29,6 @@ import AddNewClientModal from "../Client/NewClientModal";
 import AddNewProductModal from "../ProductService/NewProductModal";
 import { showmessage } from "../../../utils/api";
 
-
 const customLabelStyles = {
   label: {
     width: "100px", // Set your desired width
@@ -722,6 +721,7 @@ export default function () {
                   );
                 }
               }}
+              value={formData.Product}
             />
           </div>
           <div className="mr-12 w-100">
@@ -755,8 +755,9 @@ export default function () {
                 );
 
                 if (!product) {
-                  
-                  showmessage(`Product ${formData.Product} not found in stock.`);
+                  showmessage(
+                    `Product ${formData.Product} not found in stock.`,
+                  );
                   handleFieldChange("Qty", 0); // Set Qty to 0 or handle as needed
                   return;
                 }
@@ -780,17 +781,19 @@ export default function () {
             <Input
               variant="outlined"
               label="Unit Price"
+              type="number"
               placeholder="Unit Price"
-              value={
+              defaultValue={
                 formData.Product !== ""
                   ? getProductPrice(formData.Product, product_option)
                   : ""
               }
+              value={formData.Unit_Price}
               style={{ minWidth: 100, width: 100 }}
               labelProps={{
                 className: "w-100",
               }}
-              disabled
+              onChange={(e) => handleFieldChange("Unit_Price", e.target.value)}
             />
           </div>
           <div className="mr-12 w-100">
@@ -821,7 +824,17 @@ export default function () {
 
           <div className="mr-12">
             <Button
-              onClick={() => setRows((pre) => [...pre, formData])}
+              onClick={() => {
+                setRows((pre) => [...pre, formData]);
+                setFormData({
+                  ...formData,
+                  Product: "",
+                  Unit_Price: 0,
+                  Qty: 0,
+                  Discount: 0,
+                  Tax: "",
+                });
+              }}
               disabled={
                 formData.Client === "" ||
                 formData.Product === "" ||

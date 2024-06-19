@@ -37,7 +37,16 @@ const TABLE_HEAD = [
   "Action",
 ];
 
-let invoices = await get_all_purchase_orders();
+let invoicesData = await get_all_purchase_orders(); //TODO: filter the type here
+
+console.log(invoicesData);
+
+let invoices = invoicesData
+  .flat()
+  .filter((item) => item.Order_Type === "Purchase Order");
+
+console.log(invoices);
+
 let companyDetails = await get_company_details();
 let client_option = await get_all_client_option();
 client_option.shift();

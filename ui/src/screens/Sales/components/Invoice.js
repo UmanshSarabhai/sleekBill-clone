@@ -520,6 +520,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-end", // Align items to the end of the container
     marginBottom: 8,
     marginTop: 20,
+    marginRight: 20,
   },
   row: {
     flexDirection: "row",

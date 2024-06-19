@@ -17,6 +17,7 @@ import {
   get_company_details,
   get_all_invoices,
   get_all_purchase_orders,
+  get_all_product_option,
 } from "../utils/SelectOptions";
 import { Link, useNavigate, Navigate } from "react-router-dom";
 import adjustQuantities from "./Sales/Inventory/InventoryLogic";
@@ -24,10 +25,26 @@ import { showmessage } from "../utils/api";
 
 let invoices = await get_all_invoices();
 let purchaseOrders = await get_all_purchase_orders();
+let product_option = await get_all_product_option();
+product_option.shift();
+console.log(product_option);
+const productWithZeroQuantity = product_option.map((x) => {
+  return {
+    Product: x.text,
+    Quantity: 0,
+  };
+});
 
-const adjustedData = adjustQuantities(purchaseOrders.flat(), invoices.flat());
+console.log(productWithZeroQuantity);
 
-const current_stock = adjustedData.map((x) => {
+const adjustedData = adjustQuantities(
+  purchaseOrders.flat(),
+  invoices.flat(),
+  productWithZeroQuantity,
+);
+console.log("log", adjustedData);
+
+const current_stock = adjustedData?.map((x) => {
   return {
     Product: x.Product,
     Quantity: x.Quantity,
@@ -216,8 +233,10 @@ export default function HomePage() {
         current_stock,
       );
     };
+    console.log(current_stock);
     updateProductQuantity();
   }, [current_stock]);
+
   const navigate = useNavigate();
   useEffect(() => {
     const handleKeyPress = (event) => {

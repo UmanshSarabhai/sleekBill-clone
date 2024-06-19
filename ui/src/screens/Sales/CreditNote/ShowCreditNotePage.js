@@ -270,7 +270,8 @@ export default function ShowCreditNotePage() {
             <Button
               color="white"
               size="xs" // Adjusted button size to xs
-              onClick={() => {//console.log(obj)
+              onClick={() => {
+                //console.log(obj)
               }}
               className="py-1 px-2" // Adjusted padding
             >

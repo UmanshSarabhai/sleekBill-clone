@@ -60,9 +60,22 @@ function convertDropdownData(data) {
   }));
 }
 
-const adjustedData = adjustQuantities(purchaseOrders.flat(), invoices.flat());
+const productWithZeroQuantity = product_option.map((x) => {
+  return {
+    Product: x.text,
+    Quantity: 0,
+    Description: x.description,
+    Type: x.uom,
+    Price: x.price,
+  };
+});
 
-//console.log(adjustedData);
+productWithZeroQuantity.shift();
+const adjustedData = adjustQuantities(
+  purchaseOrders.flat(),
+  invoices.flat(),
+  productWithZeroQuantity,
+);
 
 export default function Inventory() {
   useEffect(() => {
@@ -89,7 +102,7 @@ export default function Inventory() {
           purchaseQty += parseInt(purchaseData.Qty);
         }
       } else {
-        const soldData = item.rowData.find((row) => row.Product === product);
+        const soldData = item.rowData?.find((row) => row.Product === product);
         if (soldData) {
           soldQty += parseInt(soldData.Qty);
         }
@@ -115,14 +128,27 @@ export default function Inventory() {
   });
   const [filterData, setFilterData] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isQtyModalOpen, setIsQtyModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState("");
+  const [qtyPayload, setQtyPayload] = useState([]);
   const openModal = (data) => {
     setSelectedProduct(data);
     setIsModalOpen(true);
   };
 
   const closeModal = () => {
+    setSelectedProduct("");
     setIsModalOpen(false);
+  };
+
+  const openQtyModal = (data) => {
+    setSelectedProduct(data);
+    setIsQtyModalOpen(true);
+  };
+
+  const closeQtyModal = () => {
+    setSelectedProduct("");
+    setIsQtyModalOpen(false);
   };
   const productQtyByDocument = getProductQtyByDocument(
     combinedArray,
@@ -171,6 +197,32 @@ export default function Inventory() {
                   stroke="currentColor"
                   stroke-width="2"
                   d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
+                />
+              </svg>
+            </Button>
+          </Tooltip>
+          <Tooltip content="Update Quantities">
+            <Button
+              size="xs"
+              className="py-1 px-2"
+              style={{ background: "none" }}
+              onClick={() => openQtyModal(obj)}
+            >
+              <svg
+                class="w-6 h-6 text-gray-800 dark:text-white"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2"
+                  d="m11.5 11.5 2.071 1.994M4 10h5m11 0h-1.5M12 7V4M7 7V4m10 3V4m-7 13H8v-2l5.227-5.292a1.46 1.46 0 0 1 2.065 2.065L10 17Zm-5 3h14a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1Z"
                 />
               </svg>
             </Button>
@@ -277,6 +329,42 @@ export default function Inventory() {
     }
   };
 
+  const generateFieldValue = () => {
+    const today = new Date();
+    const day = ("0" + today.getDate()).slice(-2); // Get day with leading zero if needed
+    const hours = ("0" + today.getHours()).slice(-2); // Get hours with leading zero if needed
+    const minutes = ("0" + today.getMinutes()).slice(-2); // Get minutes with leading zero if needed
+    const seconds = ("0" + today.getSeconds()).slice(-2); // Get seconds with leading zero if needed
+    const monthAbbreviation = today
+      .toLocaleString("default", { month: "short" })
+      .toUpperCase(); // Get month abbreviation
+
+    const generatedValue = `MAN-${day}${monthAbbreviation}-${hours}${minutes}${seconds}`;
+    return generatedValue;
+  };
+
+  const QtyHandler = async (qty, product) => {
+    const payLoad = {
+      Document_No: generateFieldValue(),
+      rowData: [
+        {
+          Product: product,
+          Qty: qty,
+        },
+      ],
+      Order_Type: "Manufacture",
+    };
+
+    setQtyPayload(payLoad);
+  };
+
+  const handleSave = async () => {
+    const res = await window.api.invoke(
+      "update-manufacture-quantity",
+      qtyPayload,
+    );
+  };
+
   const resetFilterValues = () => {
     window.location.reload();
   };
@@ -355,6 +443,40 @@ export default function Inventory() {
           </DialogBody>
           <DialogFooter>
             <button onClick={closeModal}>Close</button>
+          </DialogFooter>
+        </Dialog>
+
+        <Dialog size="md" open={isQtyModalOpen} handleOpen={openQtyModal}>
+          <DialogHeader toggler={closeQtyModal}>
+            Update Product Quantities
+          </DialogHeader>
+          <DialogBody>
+            <div className="flex flex-1 mb-2">
+              <Input
+                variant="outlined"
+                label="Update Qty"
+                type="number"
+                placeholder={`Add Qty for ${selectedProduct.Product}`}
+                onChange={(e) =>
+                  QtyHandler(e.target.value, selectedProduct.Product)
+                }
+              />{" "}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <Button
+              onClick={closeQtyModal}
+              className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              style={{ marginRight: 5 }}
+            >
+              Close
+            </Button>
+            <Button
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+              onClick={handleSave}
+            >
+              Save
+            </Button>
           </DialogFooter>
         </Dialog>
       </>

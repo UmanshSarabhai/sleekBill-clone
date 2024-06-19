@@ -48,18 +48,18 @@ function createWindow() {
 
   const startURL = "http://localhost:3000";
 
-  const isDevelopment = true;
+  const isDevelopment = false;
 
   if (!DBManager.isInitialized) {
     DBManager.initialize().then((v) => {
-      mainWindow.loadURL(startURL);
-      //mainWindow.loadFile(path.join(__dirname, "ui/build/index.html"));
+      // mainWindow.loadURL(startURL);
+      mainWindow.loadFile(path.join(__dirname, "ui/build/index.html"));
     });
   }
   if (isDevelopment) {
     electronReload(__dirname);
   } else {
-    const watcher = chokidar.watch("db/test.sqlite");
+    const watcher = chokidar.watch("db/database.sqlite");
     watcher.on("change", () => {
       mainWindow.reload();
     });
@@ -68,13 +68,11 @@ function createWindow() {
   mainWindow.on("closed", () => (mainWindow = null));
 }
 
-ipcMain.handle("show-message",(ev,args)=>{
-  
-  dialog.showMessageBox(null,args)
-})
+ipcMain.handle("show-message", (ev, args) => {
+  dialog.showMessageBox(null, args);
+});
 
 app.on("ready", createWindow);
-
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") {
@@ -364,7 +362,6 @@ async function getAllProductsList(args) {
       total: totalCount,
     };
   } catch (error) {
-    
     return {
       success: true,
       data: [],
@@ -405,13 +402,11 @@ ipcMain.handle("add-new-company", (ev, args) => {
           return "ok";
         },
         (e) => {
-          
           return "error";
         }
       );
     },
     (err) => {
-      
       return "error";
     }
   );
@@ -811,7 +806,6 @@ ipcMain.handle("add-new-product", async (ev, args) => {
     const response = await addNewProduct(args);
     return response;
   } catch (error) {
-    
     return {
       success: false,
       message: "Failed to add product",
@@ -852,7 +846,6 @@ ipcMain.handle("update-product", async (ev, args) => {
       return { success: true, message: "Product updated successfully." };
     }
   } catch (error) {
-    
     return {
       success: false,
       message: "An error occurred while updating product.",
@@ -876,7 +869,6 @@ ipcMain.handle("delete-product-by-id", async (ev, args) => {
       return { success: true, message: "Product deleted successfully." };
     }
   } catch (error) {
-    
     return {
       success: false,
       message: "An error occurred while deleting product.",
@@ -893,7 +885,6 @@ ipcMain.handle("get-all-product", async (ev, args) => {
       data,
     };
   } catch (error) {
-    
     return {
       success: true,
       data: [],
@@ -1068,7 +1059,7 @@ ipcMain.handle("import-products-from-excel", async (ev, args) => {
         tax: product["Tax(%)"],
         cess: product["CESS"],
       };
-      
+
       const response = await addNewProduct(productObj);
       if (response && response.success == true) {
         successProductCount++;
@@ -1426,7 +1417,6 @@ ipcMain.handle("add-new-invoice", async (ev, args) => {
     const response = await addNewInvoice(args);
     return response;
   } catch (error) {
-    
     return {
       success: false,
       message: "Failed to add invoice",
@@ -1439,7 +1429,6 @@ ipcMain.handle("get-invoice-count", async () => {
     const response = await getCountOfInvoices();
     return response;
   } catch (error) {
-    
     return {
       success: false,
       message: "Failed to fetch invoice count",
@@ -1452,7 +1441,6 @@ ipcMain.handle("add-new-purchase-order", async (ev, args) => {
     const response = await addNewPurchaseOrder(args);
     return response;
   } catch (error) {
-    
     return {
       success: false,
       message: "Failed to add purchase order",
@@ -1760,6 +1748,7 @@ async function addNewPurchaseOrder(invoiceData) {
       Discount_on_all: invoiceData.Discount_on_all,
       Total_BeforeTax: invoiceData.Total_BeforeTax,
       Total_Tax: invoiceData.Total_Tax,
+      Order_Type: invoiceData?.Order_Type,
     };
     // Save the new invoice entity to the database
     const result = await productRepo
@@ -3125,33 +3114,54 @@ ipcMain.handle("get-product-quantity", async (ev, args) => {
 });
 
 async function updateProductDetails(productDetailsData) {
+  console.log(JSON.stringify(productDetailsData));
   try {
     const productDetailsRepo = DBManager.getRepository(ProductQuantities);
 
-    for (const data of productDetailsData) {
-      // Check if the product already exists
-      let existingProductDetails = await productDetailsRepo.findOne({
-        where: { Product: data.Product },
-      });
+    // Start a transaction
+    await productDetailsRepo.manager.transaction(
+      async (transactionalEntityManager) => {
+        for (const data of productDetailsData) {
+          // Check if the product already exists
+          let existingProductDetails = await transactionalEntityManager.findOne(
+            ProductQuantities,
+            {
+              where: { Product: data.Product },
+            }
+          );
 
-      if (existingProductDetails) {
-        // Update the existing product's quantity
-        existingProductDetails.Quantity = data.Quantity; // Update the quantity
-        existingProductDetails.updated_at = new Date();
-        await productDetailsRepo.save(existingProductDetails);
-        //console.log(`Product details for ${data.Product} updated successfully!`);
-      } else {
-        // Create new product details
-        const newProductDetails = productDetailsRepo.create({
-          Product: data.Product,
-          Quantity: data.Quantity, // Set the quantity
-          created_at: new Date(),
-          updated_at: new Date(),
-        });
-        await productDetailsRepo.save(newProductDetails);
-        //console.log(`New product details for ${data.Product} added successfully!`);
+          if (existingProductDetails) {
+            // Update the existing product's quantity
+            existingProductDetails.Quantity = data.Quantity;
+            existingProductDetails.updated_at = new Date();
+            await transactionalEntityManager.save(
+              ProductQuantities,
+              existingProductDetails
+            );
+            console.log(
+              `Product details for ${data.Product} updated successfully!`
+            );
+          } else {
+            // Create new product details
+            const newProductDetails = transactionalEntityManager.create(
+              ProductQuantities,
+              {
+                Product: data.Product,
+                Quantity: data.Quantity,
+                created_at: new Date(),
+              }
+            );
+            await transactionalEntityManager.save(
+              ProductQuantities,
+              newProductDetails
+            );
+            console.log(
+              `New product details for ${data.Product} added successfully!`
+            );
+          }
+        }
       }
-    }
+    );
 
     return {
       success: true,
@@ -3165,3 +3175,16 @@ async function updateProductDetails(productDetailsData) {
     };
   }
 }
+
+ipcMain.handle("update-manufacture-quantity", async (ev, args) => {
+  try {
+    const response = await addNewPurchaseOrder(args);
+    return response;
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      message: "Failed to update product quantity",
+    };
+  }
+});

@@ -64,6 +64,11 @@ const PurchaseOrder = new EntitySchema({
       type: Number,
       nullable: true,
     },
+    Order_Type: {
+      type: String,
+      nullable: false,
+      default:"Purchase Order"
+    }
   },
 });
 

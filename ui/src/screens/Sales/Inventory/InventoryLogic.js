@@ -1,4 +1,47 @@
-export default function adjustQuantities(purchaseData, invoiceData) {
+export default function adjustQuantities(
+  purchaseData,
+  invoiceData,
+  product_option,
+) {
+  function mergeArrays(x, y) {
+    // Create a map to store product details by product name
+    let productMap = new Map();
+
+    // Populate the map with items from array x
+    x.forEach((item) => {
+      productMap.set(item.Product, {
+        Product: item.Product,
+        Quantity: item.Quantity,
+        Description: item.Description,
+        Type: item.Type,
+        Price: item.Price,
+      });
+    });
+
+    // Merge in items from array y, updating or adding as necessary
+    y.forEach((item) => {
+      if (productMap.has(item.Product)) {
+        // If product from y exists in x, update the properties
+        let existingItem = productMap.get(item.Product);
+        existingItem.Description = item.Description || existingItem.Description;
+        existingItem.Type = item.Type || existingItem.Type;
+        existingItem.Price = item.Price || existingItem.Price;
+      } else {
+        // If product from y does not exist in x, add it
+        productMap.set(item.Product, {
+          Product: item.Product,
+          Quantity: item.Quantity,
+          Description: item.Description,
+          Type: item.Type,
+          Price: item.Price,
+        });
+      }
+    });
+
+    // Convert the map back to an array
+    return Array.from(productMap.values());
+  }
+
   const soldQuantities = {};
 
   // Calculate sold quantities
@@ -58,6 +101,8 @@ export default function adjustQuantities(purchaseData, invoiceData) {
 
   // Convert combined data map to array
   const adjustedData = Array.from(combinedDataMap.values());
+  const combinedData = mergeArrays(adjustedData, product_option);
+  combinedData.sort((a, b) => b.Quantity - a.Quantity);
 
-  return adjustedData;
+  return combinedData;
 }
