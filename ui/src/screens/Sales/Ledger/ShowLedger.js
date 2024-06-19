@@ -224,11 +224,11 @@ export default function ShowLedgerPage() {
         });
         saveAs(blob, "export_ledger.xlsx");
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
-      console.log("Export response:", response);
+      //console.log("Export response:", response);
     } catch (error) {
-      console.error("Export error:", error);
+      //console.error("Export error:", error);
     }
   };
   const renderInvoicePreview = () => {

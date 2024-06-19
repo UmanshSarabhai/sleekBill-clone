@@ -27,6 +27,7 @@ import ModuleDropDown from "../../../assets/DropDown/ModuleDropDown";
 import { useNavigate, useLocation } from "react-router-dom";
 import AddNewClientModal from "../Client/NewClientModal";
 import AddNewProductModal from "../ProductService/NewProductModal";
+import { showmessage } from "../../../utils/api";
 
 const customLabelStyles = {
   label: {
@@ -91,7 +92,7 @@ let tax_option = tax_type();
 let uom_option = uom_type();
 let current_stock = await get_product_quantities();
 
-console.log(current_stock.data);
+//console.log(current_stock.data);
 
 export default function () {
   useEffect(() => {
@@ -102,7 +103,7 @@ export default function () {
   const location = useLocation();
   const { data } = location.state || {};
 
-  console.log("The Data:", JSON.stringify(data));
+  //console.log("The Data:", JSON.stringify(data));
 
   const initialValues = {
     Client: "",
@@ -130,7 +131,7 @@ export default function () {
   };
   const [formData, setFormData] = useState(initialValues);
 
-  console.log(formData);
+  //console.log(formData);
 
   useEffect(() => {
     // Convert the issue date to a Date object
@@ -143,14 +144,14 @@ export default function () {
     // Check if daysToAdd is a valid number
     if (isNaN(daysToAdd)) {
       // Handle invalid payment term
-      console.error("Invalid Payment_Term:", formData.Payment_Term);
+      //console.error("Invalid Payment_Term:", formData.Payment_Term);
       return;
     }
 
     // Check if issueDate is a valid date
     if (isNaN(issueDate.getTime())) {
       // Handle invalid issue date
-      console.error("Invalid Issue_Date:", formData.Issue_Date);
+      //console.error("Invalid Issue_Date:", formData.Issue_Date);
       return;
     }
 
@@ -190,7 +191,7 @@ export default function () {
     getAllClients();
   }, []);
 
-  console.log(product_option);
+  //console.log(product_option);
 
   useEffect(() => {
     setSelectedClient(
@@ -376,7 +377,7 @@ export default function () {
     return product ? product.tax : null;
   };
 
-  console.log(getProductTax(formData.Product, product_option));
+  //console.log(getProductTax(formData.Product, product_option));
   const generateFieldValue = () => {
     const today = new Date();
     const day = ("0" + today.getDate()).slice(-2); // Get day with leading zero if needed
@@ -446,7 +447,7 @@ export default function () {
       };
 
       const res = await window.api.invoke("add-new-invoice", invoiceData);
-      alert(res.message); // Handle the response as needed
+      showmessage(res.message); // Handle the response as needed
       window.location.reload();
     };
 
@@ -754,7 +755,9 @@ export default function () {
                 );
 
                 if (!product) {
-                  alert(`Product ${formData.Product} not found in stock.`);
+                  showmessage(
+                    `Product ${formData.Product} not found in stock.`,
+                  );
                   handleFieldChange("Qty", 0); // Set Qty to 0 or handle as needed
                   return;
                 }
@@ -762,7 +765,7 @@ export default function () {
                 if (product.Quantity > e.target.value) {
                   handleFieldChange("Qty", e.target.value);
                 } else {
-                  alert(
+                  showmessage(
                     `Only ${product.Quantity} quantities are available for ${product.Product}`,
                   );
                   handleFieldChange("Qty", product.Quantity);

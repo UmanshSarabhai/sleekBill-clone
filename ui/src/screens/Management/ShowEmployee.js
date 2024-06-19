@@ -24,6 +24,7 @@ import {
 } from "../../../src/utils/SelectOptions";
 import HomeButton from "../../assets/Buttons/HomeButton";
 import { saveAs } from "file-saver";
+import { showmessage } from "../../utils/api";
 
 const TABLE_HEAD_MAIN = [
   "No",
@@ -123,7 +124,7 @@ const uniqueAttendanceMonths = [
   ),
 ];
 
-console.log(uniqueAttendanceMonths);
+//console.log(uniqueAttendanceMonths);
 
 const LEAVE_ROWS = allLeaves.map((item) => {
   return {
@@ -138,7 +139,7 @@ const handleDeleteEmployee = async (obj) => {
     "delete-employee-by-contact-no",
     obj.Contact_No,
   );
-  alert(res.message);
+  showmessage(res.message);
 };
 
 export default function ShowEmployee() {
@@ -317,7 +318,7 @@ export default function ShowEmployee() {
   const openAttendanceDataModal = (obj) => {
     setAttendanceDataModalOpen(true);
     setEmployeeViewingAttendance(obj.Employee_name);
-    console.log(obj);
+    //console.log(obj);
   };
 
   // Function to close attendance modal
@@ -332,7 +333,7 @@ export default function ShowEmployee() {
       "add-employee-attendance",
       employeeApplyingAttendance,
     );
-    alert(res.message);
+    showmessage(res.message);
     setEmployeeApplyingAttendance(initialAttendanceData);
   };
 
@@ -357,7 +358,7 @@ export default function ShowEmployee() {
       "add-employee-leave",
       employeeApplyingLeave,
     );
-    alert(res.message);
+    showmessage(res.message);
     setEmployeeApplyingLeave(initialLeaveData);
   };
 
@@ -381,7 +382,7 @@ export default function ShowEmployee() {
       "add-new-employee-payment",
       paymentData,
     );
-    alert(res.message);
+    showmessage(res.message);
     setPaymentData(initialPaymentData);
   };
   const openModal = () => {
@@ -394,7 +395,7 @@ export default function ShowEmployee() {
 
   const handleSave = async () => {
     const res = await window.api.invoke("add-new-employee", fields);
-    alert(res.message);
+    showmessage(res.message);
   };
 
   const nonEmptyValues = () => {

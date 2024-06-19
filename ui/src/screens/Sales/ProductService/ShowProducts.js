@@ -9,6 +9,7 @@ import { get_all_product_option } from "../../../utils/SelectOptions";
 // import DatePicker from "../components/DatePicker";
 import { AddEditViewProductModal } from "./AddEditViewProductModal";
 import HomeButton from "../../../assets/Buttons/HomeButton";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "S.No",
@@ -165,7 +166,7 @@ export default function ShowProductsPage() {
         text: cat.name,
         value: cat.name,
       }));
-      // console.log({subCategoriesArray});
+      // //console.log({subCategoriesArray});
       setSubCategories(subCategoriesArray);
     };
     getSubCategories();
@@ -284,10 +285,10 @@ export default function ShowProductsPage() {
         });
         saveAs(blob, "sample_products.xlsx"); // Using FileSaver.js to prompt download
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
     } catch (error) {
-      console.error("Error invoking IPC:", error);
+      //console.error("Error invoking IPC:", error);
     }
   };
 
@@ -304,10 +305,10 @@ export default function ShowProductsPage() {
         fileData,
       });
       if (response && response.success === true) {
-        alert(response.message);
+        showmessage(response.message);
         setImportModal(false);
       } else {
-        alert(response.message);
+        showmessage(response.message);
       }
     }
   };
@@ -327,11 +328,11 @@ export default function ShowProductsPage() {
         });
         saveAs(blob, "export_products.xlsx");
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
-      console.log("Export response:", response);
+      //console.log("Export response:", response);
     } catch (error) {
-      console.error("Export error:", error);
+      //console.error("Export error:", error);
     }
   };
 
@@ -418,9 +419,9 @@ export default function ShowProductsPage() {
         updatedFields: nonEmptyProductFields,
       });
       if (res && res.success === true) {
-        alert(res.message);
+        showmessage(res.message);
       } else {
-        alert(res.message);
+        showmessage(res.message);
       }
     } else {
       const res = await window.api.invoke(
@@ -428,9 +429,9 @@ export default function ShowProductsPage() {
         nonEmptyProductFields,
       );
       if (res && res.success === true) {
-        alert(res.message);
+        showmessage(res.message);
       } else {
-        alert(res.message);
+        showmessage(res.message);
       }
     }
   };

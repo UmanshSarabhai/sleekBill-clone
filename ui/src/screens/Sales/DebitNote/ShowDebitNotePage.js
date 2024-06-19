@@ -28,6 +28,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
 import { useNavigate } from "react-router-dom";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -501,7 +502,7 @@ export default function ShowDebitNotePage() {
       "delete-debit-note-by-Document-no",
       obj.Document_No,
     );
-    alert(res.message);
+    showmessage(res.message);
   };
   const AmountPaidHandler = async (e, doc_no) => {
     handleInputChange("Amount_Paid", e.target.value);

@@ -19,6 +19,7 @@ import SelectComp from "../components/SelectComp";
 import { get_all_vendor_option } from "../../../utils/SelectOptions";
 import { saveAs } from "file-saver";
 import HomeButton from "../../../assets/Buttons/HomeButton";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -62,7 +63,7 @@ const handleDeleteVendor = async (obj) => {
     "delete-vendor-by-contact-number",
     obj.number,
   );
-  alert(res.message);
+  showmessage(res.message);
 };
 
 const VENDOR_ROWS = vendors.map((x) => {
@@ -126,7 +127,7 @@ export default function ShowVendors() {
 
   const handleSave = async () => {
     const res = await window.api.invoke("add-new-vendor", fields);
-    alert(res.message);
+    showmessage(res.message);
   };
   // const nonEmptyValues = () => {
   //   return Object.keys(filterValues).filter((key) => filterValues[key] !== "");
@@ -252,7 +253,7 @@ export default function ShowVendors() {
     }));
   };
 
-  console.log(removeStatusField(VENDOR_ROWS));
+  //console.log(removeStatusField(VENDOR_ROWS));
 
   function removeStatusField(objectsArray) {
     // Iterate through each object in the array
@@ -277,11 +278,11 @@ export default function ShowVendors() {
         });
         saveAs(blob, `export_vendors.xlsx`);
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
-      console.log("Export response:", response);
+      //console.log("Export response:", response);
     } catch (error) {
-      console.error("Export error:", error);
+      //console.error("Export error:", error);
     }
   };
 

@@ -3,6 +3,7 @@ import { Button, Input } from "@material-tailwind/react";
 import HomeButton from "../../assets/Buttons/HomeButton";
 import { get_company_details } from "../../utils/SelectOptions";
 import { Link } from "react-router-dom";
+import { showmessage } from "../../utils/api";
 
 const initialValues = {
   companyName: "",
@@ -47,9 +48,9 @@ export default function AddCompanyDetails() {
   };
 
   const handleSubmit = async () => {
-    console.log(formData);
+    //console.log(formData);
     const res = await window.api.invoke("add-company-details", formData);
-    alert(res.message);
+    showmessage(res.message);
     window.location.reload();
   };
 

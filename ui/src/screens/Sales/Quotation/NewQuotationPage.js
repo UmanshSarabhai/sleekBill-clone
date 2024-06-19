@@ -25,6 +25,7 @@ import HomeButton from "../../../assets/Buttons/HomeButton";
 import BackButton from "../../../assets/Buttons/BackButton";
 import ModuleDropDown from "../../../assets/DropDown/ModuleDropDown";
 import { useNavigate } from "react-router-dom";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -123,14 +124,14 @@ export default function NewQuotationPage() {
     // Check if daysToAdd is a valid number
     if (isNaN(daysToAdd)) {
       // Handle invalid payment term
-      console.error("Invalid Payment_Term:", formData.Payment_Term);
+      //console.error("Invalid Payment_Term:", formData.Payment_Term);
       return;
     }
 
     // Check if issueDate is a valid date
     if (isNaN(issueDate.getTime())) {
       // Handle invalid issue date
-      console.error("Invalid Issue_Date:", formData.Issue_Date);
+      //console.error("Invalid Issue_Date:", formData.Issue_Date);
       return;
     }
 
@@ -410,7 +411,7 @@ export default function NewQuotationPage() {
       };
 
       const res = await window.api.invoke("add-new-quotation", invoiceData);
-      alert(res.message); // Handle the response as needed
+      showmessage(res.message); // Handle the response as needed
     };
 
     if (isInvoicePreviewOpen) {

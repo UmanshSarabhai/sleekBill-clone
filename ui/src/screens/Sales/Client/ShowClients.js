@@ -14,6 +14,7 @@ import {
   getFilterCities,
 } from "../../../utils/AddressDataApi";
 import HomeButton from "../../../assets/Buttons/HomeButton";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "S.No",
@@ -92,7 +93,7 @@ export default function ShowClientPage() {
 
   const [filterCitiesData, setFilterCitiesData] = useState(getFilterCities());
 
-  console.log("data", clientData);
+  //console.log("data", clientData);
 
   const fieldsToValidate = [
     "client_name",
@@ -180,10 +181,10 @@ export default function ShowClientPage() {
         });
         saveAs(blob, "sample_clients.xlsx"); // Using FileSaver.js to prompt download
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
     } catch (error) {
-      console.error("Error invoking IPC:", error);
+      //console.error("Error invoking IPC:", error);
     }
   };
 
@@ -217,11 +218,11 @@ export default function ShowClientPage() {
         });
         saveAs(blob, "export_clients.xlsx");
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
-      console.log("Export response:", response);
+      //console.log("Export response:", response);
     } catch (error) {
-      console.error("Export error:", error);
+      //console.error("Export error:", error);
     }
   };
 
@@ -353,9 +354,9 @@ export default function ShowClientPage() {
         ...(isShippingObjDefined && { shippingAddress: updateShippingObj }),
       });
       if (res && res.success === true) {
-        alert(res.message);
+        showmessage(res.message);
       } else {
-        alert(res.message);
+        showmessage(res.message);
       }
     } else {
       const res = await window.api.invoke(
@@ -363,9 +364,9 @@ export default function ShowClientPage() {
         nonEmptyProductFields,
       );
       if (res && res.success === true) {
-        alert(res.message);
+        showmessage(res.message);
       } else {
-        alert(res.message);
+        showmessage(res.message);
       }
     }
   };

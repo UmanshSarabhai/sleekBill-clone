@@ -22,6 +22,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
 import { useNavigate } from "react-router-dom";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -321,7 +322,7 @@ export default function ShowPaymentDocScreen() {
       "delete-payment-by-Document-no",
       obj.Document_No,
     );
-    alert(res.message);
+    showmessage(res.message);
   };
   function getTextForValue(option, value) {
     const clients = option;
@@ -353,11 +354,11 @@ export default function ShowPaymentDocScreen() {
         });
         saveAs(blob, "export_payment_report.xlsx");
       } else {
-        console.error("Error:", response?.error);
+        //console.error("Error:", response?.error);
       }
-      console.log("Export response:", response);
+      //console.log("Export response:", response);
     } catch (error) {
-      console.error("Export error:", error);
+      //console.error("Export error:", error);
     }
   };
 

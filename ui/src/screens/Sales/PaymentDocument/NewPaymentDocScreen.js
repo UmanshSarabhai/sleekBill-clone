@@ -29,6 +29,7 @@ import PaymentReceipt from "../components/Receipts/PaymentReceipt";
 import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import BackButton from "../../../assets/Buttons/BackButton";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -127,7 +128,7 @@ export default function NewPaymentPage() {
         "add-new-payment-data",
         paymentReceiptData,
       );
-      alert(res.message); // Handle the response as needed
+      showmessage(res.message); // Handle the response as needed
     };
 
     if (isInvoicePreviewOpen) {

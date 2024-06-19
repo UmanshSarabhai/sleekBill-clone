@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
+const { app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 const { DBManager } = require("./utils/DBManager");
 const { CompanyModel } = require("./models/Company");
@@ -59,15 +59,18 @@ function createWindow() {
   if (isDevelopment) {
     electronReload(__dirname);
   } else {
-    const watcher = chokidar.watch("db/test.sqlite");
+    const watcher = chokidar.watch("db/database.sqlite");
     watcher.on("change", () => {
-      console.log("DB file changed. Reloading...");
       mainWindow.reload();
     });
   }
 
   mainWindow.on("closed", () => (mainWindow = null));
 }
+
+ipcMain.handle("show-message", (ev, args) => {
+  dialog.showMessageBox(null, args);
+});
 
 app.on("ready", createWindow);
 
@@ -150,11 +153,6 @@ async function getAllClientsList(args) {
       client.pincode = fullAddress[0].pincode;
       client.country = fullAddress[0].country;
     }
-    console.log({
-      data: paginatedClients,
-      page: parseInt(page),
-      total: totalCount,
-    });
 
     return {
       data: paginatedClients,
@@ -162,7 +160,6 @@ async function getAllClientsList(args) {
       total: totalCount,
     };
   } catch (error) {
-    console.log(error);
     return {
       success: true,
       data: [],
@@ -236,7 +233,7 @@ async function addNewClient(args) {
       message: "Client added successfully!",
     };
   } catch (error) {
-    console.error("Error adding new client:", error);
+    //console.error("Error adding new client:", error);
     return {
       success: false,
       message: error,
@@ -278,7 +275,6 @@ async function addNewProduct(args) {
       return { success: true, message: "Product added successfully" };
     }
   } catch (error) {
-    console.log(error);
     return { success: false, message: "Error while adding new product" };
   }
 }
@@ -366,7 +362,6 @@ async function getAllProductsList(args) {
       total: totalCount,
     };
   } catch (error) {
-    console.log(error);
     return {
       success: true,
       data: [],
@@ -407,13 +402,11 @@ ipcMain.handle("add-new-company", (ev, args) => {
           return "ok";
         },
         (e) => {
-          console.log(err);
           return "error";
         }
       );
     },
     (err) => {
-      console.log(err);
       return "error";
     }
   );
@@ -474,7 +467,7 @@ ipcMain.handle("get-client-by-id", async (ev, args) => {
     // Return client details
     return { success: true, client };
   } catch (error) {
-    console.error("Error retrieving client:", error);
+    //console.error("Error retrieving client:", error);
     return { success: false, message: "Error retrieving client" };
   }
 });
@@ -550,7 +543,7 @@ ipcMain.handle("delete-client-by-id", async (ev, args) => {
       return { success: true, message: "Client deleted successfully." };
     }
   } catch (error) {
-    console.error("Error deleting client:", error);
+    //console.error("Error deleting client:", error);
     return { success: false, message: "Error while deleting client" };
   }
 });
@@ -674,11 +667,11 @@ ipcMain.handle("export-clients-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting clients:", error);
+    //console.error("Error exporting clients:", error);
     return null;
   }
 });
@@ -727,12 +720,12 @@ ipcMain.handle("download-client-sample-import-file", async (ev, args) => {
       return { success: true, buffer: buffer };
     } else {
       // Log an error if buffer is null
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
     // Log any errors during the process
-    console.error("Error generating sample import file:", error);
+    //console.error("Error generating sample import file:", error);
     return { error: error.message }; // Return the error message
   }
 });
@@ -799,7 +792,7 @@ ipcMain.handle("import-clients-from-excel", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error importing clients from Excel:", error);
+    //console.error("Error importing clients from Excel:", error);
     return { success: false, message: "Error importing clients from Excel" };
   }
 });
@@ -813,7 +806,6 @@ ipcMain.handle("add-new-product", async (ev, args) => {
     const response = await addNewProduct(args);
     return response;
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       message: "Failed to add product",
@@ -833,7 +825,7 @@ ipcMain.handle("get-product-by-id", async (ev, args) => {
     }
     return { success: true, product };
   } catch (error) {
-    console.error("Error retrieving product:", error);
+    //console.error("Error retrieving product:", error);
     return { success: false, message: "Error retrieving product" };
   }
 });
@@ -854,7 +846,6 @@ ipcMain.handle("update-product", async (ev, args) => {
       return { success: true, message: "Product updated successfully." };
     }
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       message: "An error occurred while updating product.",
@@ -878,7 +869,6 @@ ipcMain.handle("delete-product-by-id", async (ev, args) => {
       return { success: true, message: "Product deleted successfully." };
     }
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       message: "An error occurred while deleting product.",
@@ -895,7 +885,6 @@ ipcMain.handle("get-all-product", async (ev, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
     return {
       success: true,
       data: [],
@@ -958,11 +947,11 @@ ipcMain.handle("export-products-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
@@ -1016,7 +1005,7 @@ ipcMain.handle("download-product-sample-import-file", async (ev, args) => {
     }
   } catch (error) {
     // Log any errors during the process
-    console.error("Error generating sample product import file:", error);
+    //console.error("Error generating sample product import file:", error);
     return { error: error.message }; // Return the error message
   }
 });
@@ -1070,7 +1059,7 @@ ipcMain.handle("import-products-from-excel", async (ev, args) => {
         tax: product["Tax(%)"],
         cess: product["CESS"],
       };
-      console.log({ productObj });
+
       const response = await addNewProduct(productObj);
       if (response && response.success == true) {
         successProductCount++;
@@ -1085,7 +1074,7 @@ ipcMain.handle("import-products-from-excel", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error importing products from Excel:", error);
+    //console.error("Error importing products from Excel:", error);
     return { success: false, message: "Error importing products from Excel" };
   }
 });
@@ -1108,7 +1097,7 @@ ipcMain.handle("add-new-category", async (ev, args) => {
       message: "Category added successfully",
     };
   } catch (error) {
-    console.error("Error adding new category:", error);
+    //console.error("Error adding new category:", error);
     return { success: false, message: "Error adding new category" };
   }
 });
@@ -1137,7 +1126,7 @@ ipcMain.handle("add-new-sub-category", async (ev, args) => {
       return { success: false, message: "Failed to add sub-category" };
     }
   } catch (error) {
-    console.error("Error adding new sub-category:", error);
+    //console.error("Error adding new sub-category:", error);
     return { success: false, message: "Error adding new sub-category" };
   }
 });
@@ -1161,7 +1150,7 @@ ipcMain.handle("get-sub-categories-by-category-id", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error(`Error fetching sub-categories by category ID`, error);
+    //console.error(`Error fetching sub-categories by category ID`, error);
     return {
       success: true,
       data: [],
@@ -1191,7 +1180,7 @@ ipcMain.handle("get-all-categories", async () => {
       };
     }
   } catch (error) {
-    console.error("Error fetching all categories:", error);
+    //console.error("Error fetching all categories:", error);
     return {
       success: true,
       data: [],
@@ -1218,7 +1207,7 @@ ipcMain.handle("get-category-by-id", async (ev, args) => {
       data: category,
     };
   } catch (error) {
-    console.error("Error fetching category by ID:", error);
+    //console.error("Error fetching category by ID:", error);
     return {
       success: false,
       message: "Error occurred while fetching category by id",
@@ -1258,7 +1247,7 @@ ipcMain.handle("delete-category-by-id", async (ev, args) => {
 
     return { success: true, message: "Category deleted successfully" };
   } catch (error) {
-    console.error("Error deleting category:", error);
+    //console.error("Error deleting category:", error);
     return { success: false, message: "Error deleting category" };
   }
 });
@@ -1286,7 +1275,7 @@ ipcMain.handle("delete-sub-category-by-id", async (ev, args) => {
 
     return { success: true, message: "Sub Category deleted successfully" };
   } catch (error) {
-    console.error("Error deleting category:", error);
+    //console.error("Error deleting category:", error);
     return { success: false, message: "Error deleting category" };
   }
 });
@@ -1317,7 +1306,7 @@ ipcMain.handle("add-new-tax", async (ev, args) => {
       message: "New tax added successfully!",
     };
   } catch (error) {
-    console.error("Error adding new tax:", error);
+    //console.error("Error adding new tax:", error);
     return { success: false, message: "Error adding new tax" };
   }
 });
@@ -1334,7 +1323,7 @@ ipcMain.handle("get-all-taxes", async () => {
       message: "Taxes fetched successfully",
     };
   } catch (error) {
-    console.error("Error fetching all taxes:", error);
+    //console.error("Error fetching all taxes:", error);
     return {
       success: false,
       data: [],
@@ -1366,7 +1355,7 @@ ipcMain.handle("update-tax", async (ev, args) => {
 
     return { success: true, message: "Tax updated successfully" };
   } catch (error) {
-    console.error("Error updating tax:", error);
+    //console.error("Error updating tax:", error);
     return { success: false, message: "Error updating tax" };
   }
 });
@@ -1392,7 +1381,7 @@ ipcMain.handle("delete-tax-by-id", async (ev, args) => {
 
     return { success: true, message: "Tax deleted successfully" };
   } catch (error) {
-    console.error("Error deleting tax:", error);
+    //console.error("Error deleting tax:", error);
     return { success: false, message: "Error deleting tax" };
   }
 });
@@ -1416,7 +1405,7 @@ ipcMain.handle("get-tax-by-id", async (ev, args) => {
       data: tax,
     };
   } catch (error) {
-    console.error("Error fetching tax by ID:", error);
+    //console.error("Error fetching tax by ID:", error);
     return { success: false, message: `Error fetching tax by ID: ${args.id}` };
   }
 });
@@ -1428,7 +1417,6 @@ ipcMain.handle("add-new-invoice", async (ev, args) => {
     const response = await addNewInvoice(args);
     return response;
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       message: "Failed to add invoice",
@@ -1441,7 +1429,6 @@ ipcMain.handle("get-invoice-count", async () => {
     const response = await getCountOfInvoices();
     return response;
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       message: "Failed to fetch invoice count",
@@ -1454,7 +1441,6 @@ ipcMain.handle("add-new-purchase-order", async (ev, args) => {
     const response = await addNewPurchaseOrder(args);
     return response;
   } catch (error) {
-    console.log(error);
     return {
       success: false,
       message: "Failed to add purchase order",
@@ -1467,7 +1453,7 @@ ipcMain.handle("add-new-debit-note", async (ev, args) => {
     const response = await addNewDebitNote(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add debit note",
@@ -1478,10 +1464,10 @@ ipcMain.handle("add-new-debit-note", async (ev, args) => {
 ipcMain.handle("add-new-vendor", async (ev, args) => {
   try {
     const response = await addNewVendor(args);
-    console.log(response);
+    ////console.log(response);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add vendor",
@@ -1494,7 +1480,7 @@ ipcMain.handle("save-todo", async (ev, args) => {
     const response = await addOrUpdateTodo(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add todo",
@@ -1507,7 +1493,7 @@ ipcMain.handle("add-new-expense", async (ev, args) => {
     const response = await addNewExpense(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add expense",
@@ -1520,7 +1506,7 @@ ipcMain.handle("add-new-employee", async (ev, args) => {
     const response = await addNewEmployee(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add expense",
@@ -1533,7 +1519,7 @@ ipcMain.handle("add-new-employee-payment", async (ev, args) => {
     const response = await addNewEmployeePayment(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add employee payment",
@@ -1546,7 +1532,7 @@ ipcMain.handle("add-employee-leave", async (ev, args) => {
     const response = await addNewEmployeeLeave(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add employee payment",
@@ -1559,7 +1545,7 @@ ipcMain.handle("add-employee-attendance", async (ev, args) => {
     const response = await addEmployeeAttendance(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add employee payment",
@@ -1572,7 +1558,7 @@ ipcMain.handle("add-new-credit-note", async (ev, args) => {
     const response = await addNewCreditNote(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add credit note",
@@ -1585,7 +1571,7 @@ ipcMain.handle("add-new-payment-data", async (ev, args) => {
     const response = await addNewPaymentData(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add credit note",
@@ -1598,7 +1584,7 @@ ipcMain.handle("add-new-quotation", async (ev, args) => {
     const response = await addNewQuotation(args);
     return response;
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: false,
       message: "Failed to add quotation",
@@ -1615,7 +1601,7 @@ ipcMain.handle("get-all-invoice", async (ev, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: true,
       data: [],
@@ -1632,7 +1618,7 @@ ipcMain.handle("get-all-purchase-orders", async (ev, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: true,
       data: [],
@@ -1649,7 +1635,7 @@ ipcMain.handle("get-all-payment-receipts", async (ev, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: true,
       data: [],
@@ -1666,7 +1652,7 @@ ipcMain.handle("get-all-debit-notes", async (ev, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: true,
       data: [],
@@ -1683,7 +1669,7 @@ ipcMain.handle("get-all-credit-notes", async (ev, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: true,
       data: [],
@@ -1700,7 +1686,7 @@ ipcMain.handle("get-all-quotation", async (ev, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
+    ////console.log(error);
     return {
       success: true,
       data: [],
@@ -1740,7 +1726,7 @@ async function addNewInvoice(invoiceData) {
       return { success: true, message: "New invoice added successfully!" };
     }
   } catch (error) {
-    console.error("Error adding new invoice:", error);
+    ////console.error("Error adding new invoice:", error);
   }
 }
 
@@ -1777,7 +1763,7 @@ async function addNewPurchaseOrder(invoiceData) {
       };
     }
   } catch (error) {
-    console.error("Error adding new purchase order:", error);
+    ////console.error("Error adding new purchase order:", error);
   }
 }
 
@@ -1787,7 +1773,7 @@ async function getCountOfInvoices() {
     const count = await invoiceRepository.count();
     return count;
   } catch (error) {
-    console.error("Error getting count of invoices:", error);
+    ////console.error("Error getting count of invoices:", error);
     return null;
   }
 }
@@ -1810,7 +1796,7 @@ async function addOrUpdateTodo(todoData) {
       return { success: true, message: "Todo added successfully!" };
     }
   } catch (error) {
-    console.error("Error adding or updating todo:", error);
+    ////console.error("Error adding or updating todo:", error);
     return { success: false, message: "Error adding or updating todo" };
   }
 }
@@ -1848,7 +1834,7 @@ async function addNewVendor(vendorData) {
       return { success: false, message: "Failed to add new vendor details." };
     }
   } catch (error) {
-    console.error("Error adding new vendor details:", error);
+    ////console.error("Error adding new vendor details:", error);
     // Throw the error so that calling code can handle it
     throw error;
   }
@@ -1878,7 +1864,7 @@ async function addNewExpense(expenseData) {
       };
     }
   } catch (error) {
-    console.error("Error adding new expense details:", error);
+    ////console.error("Error adding new expense details:", error);
     // Throw the error so that calling code can handle it
     throw error;
   }
@@ -1912,7 +1898,7 @@ async function addNewEmployee(employeeData) {
       };
     }
   } catch (error) {
-    console.error("Error adding new employee details:", error);
+    ////console.error("Error adding new employee details:", error);
     // Throw the error so that calling code can handle it
     throw error;
   }
@@ -1958,7 +1944,7 @@ async function addNewEmployeePayment(paymentData) {
       };
     }
   } catch (error) {
-    console.error("Error adding new payment details:", error);
+    ////console.error("Error adding new payment details:", error);
     // Throw the error so that calling code can handle it
     throw error;
   }
@@ -1991,7 +1977,7 @@ async function addNewEmployeeLeave(leaveData) {
       };
     }
   } catch (error) {
-    console.error("Error adding new leave details:", error);
+    ////console.error("Error adding new leave details:", error);
     // Throw the error so that calling code can handle it
     throw error;
   }
@@ -2025,7 +2011,7 @@ async function addEmployeeAttendance(attendanceData) {
       };
     }
   } catch (error) {
-    console.error("Error adding new attendance details:", error);
+    ////console.error("Error adding new attendance details:", error);
     // Throw the error so that calling code can handle it
     throw error;
   }
@@ -2065,7 +2051,7 @@ async function addNewDebitNote(invoiceData) {
       return { success: true, message: "New Debit Note added successfully!" };
     }
   } catch (error) {
-    console.error("Error adding new Debit Note:", error);
+    ////console.error("Error adding new Debit Note:", error);
   }
 }
 
@@ -2104,7 +2090,7 @@ async function addNewCreditNote(invoiceData) {
       return { success: true, message: "New Credit Note added successfully!" };
     }
   } catch (error) {
-    console.error("Error adding new Credit Note:", error);
+    ////console.error("Error adding new Credit Note:", error);
   }
 }
 
@@ -2138,7 +2124,7 @@ async function addNewPaymentData(paymentData) {
       };
     }
   } catch (error) {
-    console.error("Error adding new payment details:", error);
+    ////console.error("Error adding new payment details:", error);
     return { success: false, message: "Failed to add new payment details" };
   }
 }
@@ -2175,7 +2161,7 @@ async function addNewQuotation(invoiceData) {
       return { success: true, message: "New quotation added successfully!" };
     }
   } catch (error) {
-    console.error("Error adding new quotation:", error);
+    ////console.error("Error adding new quotation:", error);
   }
 }
 
@@ -2183,8 +2169,8 @@ ipcMain.handle("delete-invoice-by-Document-no", async (ev, args) => {
   try {
     const documentNo = args;
     const invoiceRepo = DBManager.getRepository(Invoice);
-    console.log(`${ev}-${args}`);
-    console.log(`Deleting invoice with Document_No: ${documentNo}`);
+    ////console.log(`${ev}-${args}`);
+    ////console.log(`Deleting invoice with Document_No: ${documentNo}`);
 
     const deleteResult = await invoiceRepo
       .createQueryBuilder()
@@ -2193,7 +2179,7 @@ ipcMain.handle("delete-invoice-by-Document-no", async (ev, args) => {
       .where("Document_No = :documentNo", { documentNo })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    ////console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return { success: true, message: "Invoice deleted successfully." };
@@ -2204,7 +2190,7 @@ ipcMain.handle("delete-invoice-by-Document-no", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting Invoice:", error);
+    ////console.error("Error deleting Invoice:", error);
     return { success: false, message: "Error while deleting invoice" };
   }
 });
@@ -2213,8 +2199,8 @@ ipcMain.handle("delete-purchase-by-Document-no", async (ev, args) => {
   try {
     const documentNo = args;
     const invoiceRepo = DBManager.getRepository(PurchaseOrder);
-    console.log(`${ev}-${args}`);
-    console.log(`Deleting purchase order with Document_No: ${documentNo}`);
+    ////console.log(`${ev}-${args}`);
+    ////console.log(`Deleting purchase order with Document_No: ${documentNo}`);
 
     const deleteResult = await invoiceRepo
       .createQueryBuilder()
@@ -2223,7 +2209,7 @@ ipcMain.handle("delete-purchase-by-Document-no", async (ev, args) => {
       .where("Document_No = :documentNo", { documentNo })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    ////console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return { success: true, message: "purchase order deleted successfully." };
@@ -2234,7 +2220,7 @@ ipcMain.handle("delete-purchase-by-Document-no", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting purchase order:", error);
+    ////console.error("Error deleting purchase order:", error);
     return { success: false, message: "Error while deleting purchase order" };
   }
 });
@@ -2243,8 +2229,8 @@ ipcMain.handle("delete-payment-by-Document-no", async (ev, args) => {
   try {
     const documentNo = args;
     const invoiceRepo = DBManager.getRepository(PaymentDetails);
-    console.log(`${ev}-${args}`);
-    console.log(`Deleting payment document with Document_No: ${documentNo}`);
+    ////console.log(`${ev}-${args}`);
+    ////console.log(`Deleting payment document with Document_No: ${documentNo}`);
 
     const deleteResult = await invoiceRepo
       .createQueryBuilder()
@@ -2253,7 +2239,7 @@ ipcMain.handle("delete-payment-by-Document-no", async (ev, args) => {
       .where("Document_No = :documentNo", { documentNo })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    ////console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return {
@@ -2267,7 +2253,7 @@ ipcMain.handle("delete-payment-by-Document-no", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting Payment Details:", error);
+    ////console.error("Error deleting Payment Details:", error);
     return { success: false, message: "Error while deleting Payment Details" };
   }
 });
@@ -2276,8 +2262,8 @@ ipcMain.handle("delete-debit-note-by-Document-no", async (ev, args) => {
   try {
     const documentNo = args;
     const invoiceRepo = DBManager.getRepository(Debit_Notes);
-    console.log(`${ev}-${args}`);
-    console.log(`Deleting debit-note with Document_No: ${documentNo}`);
+    ////console.log(`${ev}-${args}`);
+    ////console.log(`Deleting debit-note with Document_No: ${documentNo}`);
 
     const deleteResult = await invoiceRepo
       .createQueryBuilder()
@@ -2286,7 +2272,7 @@ ipcMain.handle("delete-debit-note-by-Document-no", async (ev, args) => {
       .where("Document_No = :documentNo", { documentNo })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    ////console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return { success: true, message: "Debit Note deleted successfully." };
@@ -2297,7 +2283,7 @@ ipcMain.handle("delete-debit-note-by-Document-no", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting Debit Note :", error);
+    ////console.error("Error deleting Debit Note :", error);
     return { success: false, message: "Error while deleting Debit Note " };
   }
 });
@@ -2306,8 +2292,8 @@ ipcMain.handle("delete-credit-note-by-Document-no", async (ev, args) => {
   try {
     const documentNo = args;
     const invoiceRepo = DBManager.getRepository(Credit_Notes);
-    console.log(`${ev}-${args}`);
-    console.log(`Deleting credit-note with Document_No: ${documentNo}`);
+    ////console.log(`${ev}-${args}`);
+    ////console.log(`Deleting credit-note with Document_No: ${documentNo}`);
 
     const deleteResult = await invoiceRepo
       .createQueryBuilder()
@@ -2316,7 +2302,7 @@ ipcMain.handle("delete-credit-note-by-Document-no", async (ev, args) => {
       .where("Document_No = :documentNo", { documentNo })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    ////console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return { success: true, message: "Credit Note deleted successfully." };
@@ -2327,7 +2313,7 @@ ipcMain.handle("delete-credit-note-by-Document-no", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting credit Note :", error);
+    ////console.error("Error deleting credit Note :", error);
     return { success: false, message: "Error while deleting credit Note " };
   }
 });
@@ -2336,7 +2322,7 @@ ipcMain.handle("delete-employee-by-contact-no", async (ev, args) => {
   try {
     const contactNo = args;
     const employeeRepo = DBManager.getRepository(Employee);
-    console.log(`Deleting employee with Contact_No: ${contactNo}`);
+    ////console.log(`Deleting employee with Contact_No: ${contactNo}`);
 
     const deleteResult = await employeeRepo
       .createQueryBuilder()
@@ -2344,7 +2330,7 @@ ipcMain.handle("delete-employee-by-contact-no", async (ev, args) => {
       .where("Contact_No = :contactNo", { contactNo })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    ////console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return { success: true, message: "Employee deleted successfully." };
@@ -2355,7 +2341,7 @@ ipcMain.handle("delete-employee-by-contact-no", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting employee:", error);
+    ////console.error("Error deleting employee:", error);
     return { success: false, message: "Error while deleting employee." };
   }
 });
@@ -2364,7 +2350,7 @@ ipcMain.handle("delete-vendor-by-contact-number", async (ev, args) => {
   try {
     const contactNumber = args;
     const vendorRepo = DBManager.getRepository(VendorDetails);
-    console.log(`Deleting vendor with Contact_number: ${contactNumber}`);
+    ////console.log(`Deleting vendor with Contact_number: ${contactNumber}`);
 
     const deleteResult = await vendorRepo
       .createQueryBuilder()
@@ -2372,7 +2358,7 @@ ipcMain.handle("delete-vendor-by-contact-number", async (ev, args) => {
       .where("Contact_number = :contactNumber", { contactNumber })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    ////console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return { success: true, message: "Vendor deleted successfully." };
@@ -2383,7 +2369,7 @@ ipcMain.handle("delete-vendor-by-contact-number", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting vendor:", error);
+    //console.error("Error deleting vendor:", error);
     return { success: false, message: "Error while deleting vendor." };
   }
 });
@@ -2392,7 +2378,7 @@ ipcMain.handle("delete-expense-by-id", async (ev, args) => {
   try {
     const expenseId = args;
     const expenseRepo = DBManager.getRepository(ExpenseDetails);
-    console.log(`Deleting expense with id: ${expenseId}`);
+    //console.log(`Deleting expense with id: ${expenseId}`);
 
     const deleteResult = await expenseRepo
       .createQueryBuilder()
@@ -2400,7 +2386,7 @@ ipcMain.handle("delete-expense-by-id", async (ev, args) => {
       .where("id = :expenseId", { expenseId })
       .execute();
 
-    console.log("Delete result:", deleteResult);
+    //console.log("Delete result:", deleteResult);
 
     if (deleteResult && deleteResult.affected) {
       return { success: true, message: "Expense deleted successfully." };
@@ -2411,7 +2397,7 @@ ipcMain.handle("delete-expense-by-id", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting expense:", error);
+    //console.error("Error deleting expense:", error);
     return { success: false, message: "Error while deleting expense." };
   }
 });
@@ -2420,8 +2406,8 @@ ipcMain.handle("delete-quotation-by-quotation-no", async (ev, args) => {
   try {
     const documentNo = args;
     const invoiceRepo = DBManager.getRepository(Quotation);
-    console.log(`${ev}-${args}`);
-    console.log(`Deleting Quotation with Quotation_No: ${documentNo}`);
+    //console.log(`${ev}-${args}`);
+    //console.log(`Deleting Quotation with Quotation_No: ${documentNo}`);
 
     const deleteResult = await invoiceRepo
       .createQueryBuilder()
@@ -2439,7 +2425,7 @@ ipcMain.handle("delete-quotation-by-quotation-no", async (ev, args) => {
       };
     }
   } catch (error) {
-    console.error("Error deleting Quotation:", error);
+    //console.error("Error deleting Quotation:", error);
     return { success: false, message: "Error while deleting Quotation" };
   }
 });
@@ -2449,7 +2435,7 @@ ipcMain.handle("update-invoice", async (ev, args) => {
     const response = await updateInvoice(args);
     return response;
   } catch (error) {
-    console.error(error);
+    //console.error(error);
     return {
       success: false,
       message: "Failed to update invoice",
@@ -2459,11 +2445,11 @@ ipcMain.handle("update-invoice", async (ev, args) => {
 
 ipcMain.handle("update-debit-note", async (ev, args) => {
   try {
-    console.log(JSON.stringify(args));
+    //console.log(JSON.stringify(args));
     const response = await updateDebitNote(args);
     return response;
   } catch (error) {
-    console.error(error);
+    //console.error(error);
     return {
       success: false,
       message: "Failed to update invoice",
@@ -2473,11 +2459,11 @@ ipcMain.handle("update-debit-note", async (ev, args) => {
 
 ipcMain.handle("update-credit-note", async (ev, args) => {
   try {
-    console.log(JSON.stringify(args));
+    //console.log(JSON.stringify(args));
     const response = await updateCreditNote(args);
     return response;
   } catch (error) {
-    console.error(error);
+    //console.error(error);
     return {
       success: false,
       message: "Failed to update invoice",
@@ -2522,7 +2508,7 @@ async function updateInvoice(invoiceData) {
       return { success: false, message: "Invoice not found or not updated" };
     }
   } catch (error) {
-    console.error("Error updating invoice:", error);
+    //console.error("Error updating invoice:", error);
     return {
       success: false,
       message: "Failed to update invoice",
@@ -2567,7 +2553,7 @@ async function updateDebitNote(invoiceData) {
       return { success: false, message: "Invoice not found or not updated" };
     }
   } catch (error) {
-    console.error("Error updating invoice:", error);
+    //console.error("Error updating invoice:", error);
     return {
       success: false,
       message: "Failed to update invoice",
@@ -2614,7 +2600,7 @@ async function updateCreditNote(invoiceData) {
       };
     }
   } catch (error) {
-    console.error("Error updating Credit Note:", error);
+    //console.error("Error updating Credit Note:", error);
     return {
       success: false,
       message: "Failed to update Credit Note",
@@ -2673,18 +2659,18 @@ ipcMain.handle("export-invoices-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
 
 ipcMain.handle("export-quotation-to-excel", async (ev, args) => {
-  console.log("ev", ev);
-  console.log("args", args);
+  //console.log("ev", ev);
+  //console.log("args", args);
   try {
     // Call the API to get all products with pagination and search query
     const invoices = args;
@@ -2729,11 +2715,11 @@ ipcMain.handle("export-quotation-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
@@ -2781,11 +2767,11 @@ ipcMain.handle("export-purchase-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
@@ -2827,11 +2813,11 @@ ipcMain.handle("export-ledger-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
@@ -2877,11 +2863,11 @@ ipcMain.handle("export-payment-report-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
@@ -2921,11 +2907,11 @@ ipcMain.handle("export-inventory-report-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
@@ -2965,11 +2951,11 @@ ipcMain.handle("export-vendor-report-to-excel", async (ev, args) => {
     if (buffer) {
       return { success: true, buffer: buffer };
     } else {
-      console.error("Error: Buffer is null.");
+      //console.error("Error: Buffer is null.");
       return { success: false, error: "Buffer is null." };
     }
   } catch (error) {
-    console.error("Error exporting products:", error);
+    //console.error("Error exporting products:", error);
     return null;
   }
 });
@@ -2979,7 +2965,7 @@ ipcMain.handle("add-company-details", async (ev, args) => {
     const response = await addCompanyDetails(args);
     return response;
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     return {
       success: false,
       message: "Failed to add product",
@@ -3031,7 +3017,7 @@ async function addCompanyDetails(companyDetailsData) {
       };
     }
   } catch (error) {
-    console.error("Error adding or updating company details:", error);
+    //console.error("Error adding or updating company details:", error);
     return {
       success: false,
       message: "Error adding or updating company details",
@@ -3048,7 +3034,7 @@ ipcMain.handle("get-company-details", async (event, args) => {
       data,
     };
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     return {
       success: true,
       data: [],
@@ -3101,7 +3087,7 @@ ipcMain.handle("create-invoice-from-quotation", async (event, quotationNo) => {
       message: "Invoice created from quotation successfully",
     };
   } catch (error) {
-    console.error("Error creating invoice from quotation:", error);
+    //console.error("Error creating invoice from quotation:", error);
     return { success: false, message: "Error creating invoice from quotation" };
   }
 });
@@ -3111,7 +3097,7 @@ ipcMain.handle("update-product-quantity", async (ev, args) => {
     const response = await updateProductDetails(args);
     return response;
   } catch (error) {
-    console.log(error);
+    //console.log(error);
     return {
       success: false,
       message: "Failed to update product quantity",
@@ -3182,7 +3168,7 @@ async function updateProductDetails(productDetailsData) {
       message: "Product details processed successfully!",
     };
   } catch (error) {
-    console.error("Error adding or updating product details:", error);
+    //console.error("Error adding or updating product details:", error);
     return {
       success: false,
       message: "Error adding or updating product details",

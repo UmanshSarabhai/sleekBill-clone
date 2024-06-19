@@ -31,7 +31,7 @@ export function AddEditViewClientModal({
   getCities,
   currencyOptions,
 }) {
-  console.log({ isView });
+  //console.log({ isView });
   const [shippingAddress, setShippingAddress] = useState(false);
   const title = isView
     ? "View Client"

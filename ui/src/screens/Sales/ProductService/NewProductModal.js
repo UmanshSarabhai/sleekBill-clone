@@ -9,6 +9,7 @@ import {
 } from "@material-tailwind/react";
 import SelectComp from "../components/SelectComp";
 import { tax_type } from "../../../utils/SelectOptions";
+import { showmessage } from "../../../utils/api";
 
 const unit_options = [
   {
@@ -71,7 +72,7 @@ export default function AddNewProductModal({
   const handleSave = async () => {
     // Save product data logic here
     const res = await window.api.invoke("add-new-product", productData);
-    alert(res.message);
+    showmessage(res.message);
     handleClose();
   };
 

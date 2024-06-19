@@ -22,6 +22,7 @@ import {
 } from "../../../utils/SelectOptions";
 import { saveAs } from "file-saver";
 import HomeButton from "../../../assets/Buttons/HomeButton";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -73,7 +74,7 @@ const generateDropDownList = (data) => {
 const allExpenses = await get_all_expenses();
 const handleDeleteExpense = async (obj) => {
   const res = await window.api.invoke("delete-expense-by-id", obj.id);
-  alert(res.message);
+  showmessage(res.message);
 };
 
 const EXPENSES_ROWS = allExpenses.flat().map((x) => {
@@ -115,7 +116,7 @@ const EXPENSES_ROWS = allExpenses.flat().map((x) => {
 });
 
 const allEmployees = await get_all_employee();
-console.log(allEmployees.flat());
+//console.log(allEmployees.flat());
 
 export default function ShowExpenses() {
   useEffect(() => {
@@ -144,7 +145,7 @@ export default function ShowExpenses() {
   const handleSave = async () => {
     setRenderCustomExpense(false);
     const res = await window.api.invoke("add-new-expense", fields);
-    alert(res.message);
+    showmessage(res.message);
   };
 
   const nonEmptyValues = () => {

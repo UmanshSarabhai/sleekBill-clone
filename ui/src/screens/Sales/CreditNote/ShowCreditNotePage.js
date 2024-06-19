@@ -28,6 +28,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import HomeButton from "../../../assets/Buttons/HomeButton";
 import ReportsDropDown from "../../../assets/DropDown/ReportDropDown";
 import { useNavigate } from "react-router-dom";
+import { showmessage } from "../../../utils/api";
 
 const TABLE_HEAD = [
   "No",
@@ -269,7 +270,9 @@ export default function ShowCreditNotePage() {
             <Button
               color="white"
               size="xs" // Adjusted button size to xs
-              onClick={() => console.log(obj)}
+              onClick={() => {
+                //console.log(obj)
+              }}
               className="py-1 px-2" // Adjusted padding
             >
               <svg
@@ -501,7 +504,7 @@ export default function ShowCreditNotePage() {
       "delete-credit-note-by-Document-no",
       obj.Document_No,
     );
-    alert(res.message);
+    showmessage(res.message);
   };
   const AmountPaidHandler = async (e, doc_no) => {
     handleInputChange("Amount_Paid", e.target.value);

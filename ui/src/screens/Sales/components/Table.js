@@ -22,7 +22,7 @@ export function Table({
   isClient,
 }) {
   if (totalCount === 0) {
-    console.log("no data");
+    //console.log("no data");
   }
 
   useEffect(() => {
@@ -54,7 +54,7 @@ export function Table({
     // Return blank spaces for other columns
     return TABLE_ROWS.reduce((total, row) => {
       const value = row[columnName];
-      console.log({ value });
+      //console.log({ value });
       return " ";
     }, 0);
     // return; // Return for other columns
