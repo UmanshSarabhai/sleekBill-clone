@@ -42,11 +42,11 @@ If you encounter any issues or have questions about the billing software, please
 ---
 
 Thank you for choosing our billing software! We hope it helps streamline your business operations and contributes to your success. If you have any feedback or suggestions for improvement, we'd love to hear from you. Happy billing!
-![image](https://github.com/UmanshSarabhai/sleekBill-clone/assets/49119948/95782670-fd7d-4337-8e18-81bfa6dcaf5d)
+![image](https://github.com/user-attachments/assets/5aa79a31-da8f-4d77-8f34-7732a3630c3c)
 
-![image](https://github.com/UmanshSarabhai/sleekBill-clone/assets/49119948/4899f3c3-9874-4bec-bf76-6f82b43b7b4f)
+![image](https://github.com/user-attachments/assets/55802cd3-5454-428b-902a-d6dcb025524e)
 
-![image](https://github.com/UmanshSarabhai/sleekBill-clone/assets/49119948/727faffc-7e89-40b3-af8d-949f9d0c92a1)
+![image](https://github.com/user-attachments/assets/9c9eec10-7730-40cc-94a6-c94a55f31aa0)
 
 ![image](https://github.com/UmanshSarabhai/sleekBill-clone/assets/49119948/753a3223-e2d4-4fe4-ae1a-086a229e2e2b)
 
